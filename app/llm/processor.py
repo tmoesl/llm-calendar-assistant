@@ -1,26 +1,25 @@
 import datetime
-import os
 from typing import Dict
 
 import pytz
 from openai import OpenAI
 from tzlocal import get_localzone_name
 
+from app.config.settings import get_settings
 from app.models.schemas import (
     CalendarRequestType,
     CalendarValidation,
     SecurityCheck,
 )
 
-# Initialize OpenAI client
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
-# Model configuration should come from a config file or environment variables
-DEFAULT_MODEL = "gpt-4o"
+# Initialize settings and OpenAI client
+settings = get_settings()
+client = OpenAI(api_key=settings.llm.openai.api_key)
+default_model = settings.llm.openai.default_model
 
 
 def validate_calendar_request(
-    user_input: str, model: str = DEFAULT_MODEL
+    user_input: str, model: str = default_model
 ) -> CalendarValidation:
     """
     Validates if the user input is a calendar-related request.
@@ -47,7 +46,7 @@ def validate_calendar_request(
     return completion.choices[0].message.parsed
 
 
-def security_check(user_input: str, model: str = DEFAULT_MODEL) -> SecurityCheck:
+def security_check(user_input: str, model: str = default_model) -> SecurityCheck:
     """
     Performs a security check on the user input to detect potential security risks.
 
@@ -74,7 +73,7 @@ def security_check(user_input: str, model: str = DEFAULT_MODEL) -> SecurityCheck
 
 
 def route_calendar_request(
-    user_input: str, model: str = DEFAULT_MODEL
+    user_input: str, model: str = default_model
 ) -> CalendarRequestType:
     """
     Router LLM call to determine the type of calendar request.

@@ -5,9 +5,13 @@ Combines LLM validations with business rules.
 
 from typing import Tuple
 
-from app.config import CONFIDENCE_THRESHOLD
+from app.config.settings import get_settings
 from app.llm.processor import security_check, validate_calendar_request
 from app.utils.logging_config import logger
+
+# Initialize settings
+settings = get_settings()
+confidence_threshold = settings.app.validation.confidence_threshold
 
 
 def validate_user_input(user_input: str) -> Tuple[bool, str]:
@@ -26,7 +30,7 @@ def validate_user_input(user_input: str) -> Tuple[bool, str]:
     if not calendar_validation.is_calendar_request:
         return False, "This doesn't appear to be a calendar-related request."
 
-    if calendar_validation.confidence_score < CONFIDENCE_THRESHOLD:
+    if calendar_validation.confidence_score < confidence_threshold:
         return (
             False,
             "I'm not confident that this is a calendar request. Please be more specific.",

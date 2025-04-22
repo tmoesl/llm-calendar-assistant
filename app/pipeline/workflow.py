@@ -5,11 +5,15 @@ Coordinates the processing steps without implementing business logic.
 
 from typing import Dict
 
-from app.config import CONFIDENCE_THRESHOLD
+from app.config.settings import get_settings
 from app.handlers.event_handlers import get_handler_for_type
 from app.pipeline.router import route_request
 from app.pipeline.validators import validate_user_input
 from app.utils.logging_config import logger
+
+# Initialize settings
+settings = get_settings()
+confidence_threshold = settings.app.validation.confidence_threshold
 
 
 def handle_calendar_request(input_text: str) -> Dict:
@@ -60,7 +64,7 @@ def process_calendar_request(user_input: str) -> Dict:
     try:
         request_type, confidence_score = route_request(user_input)
 
-        if confidence_score < CONFIDENCE_THRESHOLD:
+        if confidence_score < confidence_threshold:
             return {
                 "status": "error",
                 "message": "I'm not confident about what you're asking. Could you be more specific?",
