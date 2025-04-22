@@ -5,7 +5,7 @@ Handles application-specific logging functionality.
 
 from typing import Dict
 
-from app.utils.logging_config import logger
+from app.services.log_setup import logger
 
 
 def log_result(result: Dict) -> None:

@@ -6,8 +6,8 @@ This module provides a simple interface to interact with the calendar assistant.
 from app.config.settings import get_settings
 from app.demo import run_demo
 from app.pipeline.workflow import handle_calendar_request
+from app.services.log_setup import logger
 from app.utils.cli_utils import print_result, print_with_border
-from app.utils.logging_config import logger
 from app.utils.logging_utils import log_result
 
 # Initialize settings

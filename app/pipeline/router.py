@@ -6,7 +6,7 @@ Handles request classification and routing to appropriate handlers.
 from typing import Tuple
 
 from app.llm.processor import route_calendar_request
-from app.utils.logging_config import logger
+from app.services.log_setup import logger
 
 
 def route_request(user_input: str) -> Tuple[str, float]:

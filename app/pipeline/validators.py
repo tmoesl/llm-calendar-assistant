@@ -7,7 +7,7 @@ from typing import Tuple
 
 from app.config.settings import get_settings
 from app.llm.processor import security_check, validate_calendar_request
-from app.utils.logging_config import logger
+from app.services.log_setup import logger
 
 # Initialize settings
 settings = get_settings()

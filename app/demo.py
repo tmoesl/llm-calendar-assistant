@@ -4,8 +4,8 @@ Contains demo query execution and error handling.
 """
 
 from app.pipeline.workflow import handle_calendar_request
+from app.services.log_setup import logger
 from app.utils.cli_utils import print_result, print_with_border
-from app.utils.logging_config import logger
 from app.utils.logging_utils import log_result
 
 # Default demo query

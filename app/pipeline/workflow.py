@@ -9,7 +9,7 @@ from app.config.settings import get_settings
 from app.handlers.event_handlers import get_handler_for_type
 from app.pipeline.router import route_request
 from app.pipeline.validators import validate_user_input
-from app.utils.logging_config import logger
+from app.services.log_setup import logger
 
 # Initialize settings
 settings = get_settings()
