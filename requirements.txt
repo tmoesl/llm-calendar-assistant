@@ -1,0 +1,5 @@
+openai>=1.0.0
+pydantic>=2.0.0
+pytz>=2023.3
+tzlocal>=5.0.0
+streamlit>=1.30.0
