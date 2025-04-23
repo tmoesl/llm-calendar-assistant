@@ -112,6 +112,46 @@ def route_calendar_request(
     return completion.choices[0].message.parsed
 
 
+def classify_intent(user_input: str, model: str = default_model) -> CalendarRequestType:
+    """
+    Classify the intent of a calendar request.
+
+    Args:
+        user_input: The user's natural language input
+        model: The LLM model to use
+
+    Returns:
+        CalendarRequestType object with intent classification details
+    """
+    completion = client.beta.chat.completions.parse(
+        model=model,
+        messages=[
+            {
+                "role": "system",
+                "content": """Analyze the calendar request and classify its intent:
+
+                Step 1: Understand the core action
+                - Is this about creating, modifying, viewing, or deleting?
+                - What specific keywords indicate the user's intent?
+                
+                Step 2: Classify with confidence into:
+                - 'new_event': Creating a new calendar event
+                - 'modify_event': Changing existing event details
+                - 'delete_event': Removing an event
+                - 'view_event': Viewing event information
+                - 'not_actionable': Unclear or non-calendar request
+                
+                Step 3: Provide a clear description of why this classification was chosen
+                """,
+            },
+            {"role": "user", "content": user_input},
+        ],
+        response_format=CalendarRequestType,
+    )
+
+    return completion.choices[0].message.parsed
+
+
 def get_current_datetime_info() -> Dict[str, str]:
     """
     Provides current date, time, and timezone information for the LLM to use
