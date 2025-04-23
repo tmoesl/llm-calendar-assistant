@@ -64,3 +64,21 @@ class TaskEvent(BaseModel):
     metadata: Dict[str, Any] = Field(
         default_factory=dict, description="Metadata from pipeline processing steps"
     )
+
+
+class ExtractedEventData(BaseModel):
+    """Unprocessed event data from LLM extraction"""
+
+    title: Optional[str] = Field(None, description="Event title")
+    start_time: Optional[str] = Field(None, description="Start time string")
+    end_time: Optional[str] = Field(None, description="End time string")
+    description: Optional[str] = Field(None, description="Event description")
+    location: Optional[str] = Field(None, description="Event location")
+    attendees: list[str] = Field(default_factory=list, description="List of attendees")
+    timezone: Optional[str] = Field(None, description="Event timezone")
+    extraction_confidence: float = Field(
+        ..., description="LLM's confidence in extraction"
+    )
+    parsing_notes: str = Field(
+        default="", description="Notes about ambiguities or assumptions"
+    )

@@ -9,6 +9,7 @@ from app.config.settings import get_settings
 from app.models.schemas import (
     CalendarRequestType,
     CalendarValidation,
+    ExtractedEventData,
     SecurityCheck,
 )
 
@@ -171,3 +172,53 @@ def get_current_datetime_info() -> Dict[str, str]:
         # Fallback if local timezone detection fails
         now_utc = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=pytz.utc)
         return {"current_datetime": now_utc.isoformat(), "timezone": "UTC"}
+
+
+def extract_raw_event_data(
+    user_input: str, model: str = default_model
+) -> ExtractedEventData:
+    """
+    Extract raw calendar event details from user input without validation.
+
+    Args:
+        user_input: The user's natural language input
+        model: The LLM model to use
+
+    Returns:
+        ExtractedEventData containing raw extracted fields and confidence
+    """
+    current_info = get_current_datetime_info()
+
+    completion = client.beta.chat.completions.parse(
+        model=model,
+        messages=[
+            {
+                "role": "system",
+                "content": f"""Extract calendar event information from the user request.
+                Current context: {current_info['current_datetime']} ({current_info['timezone']})
+                
+                Extract what you can find, mark uncertainties, and provide confidence.
+                Consider:
+                - Event title/subject
+                - Time expressions (e.g., "tomorrow", "next week", "3pm")
+                - Duration hints (e.g., "1 hour", "all day")
+                - Location mentions (in-person/virtual)
+                - Attendee references (names, emails, roles)
+                - Timezone indicators
+                
+                If something is ambiguous, note it in parsing_notes.
+                Don't try to validate or format the data, just extract what's mentioned.
+                Leave fields as None if not found in the input.
+                
+                Provide extraction_confidence (0-1) based on:
+                - Clarity of time expressions
+                - Completeness of required information
+                - Ambiguity level in the request
+                """,
+            },
+            {"role": "user", "content": user_input},
+        ],
+        response_format=ExtractedEventData,
+    )
+
+    return completion.choices[0].message.parsed
