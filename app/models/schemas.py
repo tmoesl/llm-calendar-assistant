@@ -54,6 +54,7 @@ class TaskEvent(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc),
         description="When this request was created",
     )
+    user_input: str = Field(..., description="Original user input text")
     status: str = Field(
         default="initialized", description="Current status of the request"
     )
