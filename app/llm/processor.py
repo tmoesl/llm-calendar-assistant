@@ -1,9 +1,4 @@
-import datetime
-from typing import Dict
-
-import pytz
 from openai import OpenAI
-from tzlocal import get_localzone_name
 
 from app.config.settings import get_settings
 from app.models.schemas import (
@@ -12,6 +7,7 @@ from app.models.schemas import (
     ExtractedEventData,
     SecurityCheck,
 )
+from app.utils.datetime_utils import get_current_datetime_info
 
 # Initialize settings and OpenAI client
 settings = get_settings()
@@ -151,27 +147,6 @@ def classify_intent(user_input: str, model: str = default_model) -> CalendarRequ
     )
 
     return completion.choices[0].message.parsed
-
-
-def get_current_datetime_info() -> Dict[str, str]:
-    """
-    Provides current date, time, and timezone information for the LLM to use
-    when processing calendar requests.
-
-    Returns:
-        dict: Current datetime and timezone information
-    """
-    try:
-        timezone_str = get_localzone_name()  # e.g., 'Australia/Sydney'
-        timezone = pytz.timezone(timezone_str)
-        now_local = datetime.datetime.now(timezone)
-
-        return {"current_datetime": now_local.isoformat(), "timezone": timezone_str}
-
-    except Exception:
-        # Fallback if local timezone detection fails
-        now_utc = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=pytz.utc)
-        return {"current_datetime": now_utc.isoformat(), "timezone": "UTC"}
 
 
 def extract_raw_event_data(

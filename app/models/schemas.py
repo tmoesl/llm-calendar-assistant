@@ -4,6 +4,8 @@ from uuid import uuid4
 
 from pydantic import BaseModel, Field
 
+from app.utils.datetime_utils import get_current_datetime_info
+
 
 class CalendarValidation(BaseModel):
     """Check if input is a valid calendar request"""
@@ -40,7 +42,10 @@ class EventDetails(BaseModel):
     attendees: list[str] = Field(
         default_factory=list, description="List of attendee emails"
     )
-    timezone: str = Field(default="UTC", description="Timezone for the event")
+    timezone: str = Field(
+        default_factory=lambda: get_current_datetime_info()["timezone"],
+        description="Timezone for the event, defaults to system timezone",
+    )
 
 
 class TaskEvent(BaseModel):
