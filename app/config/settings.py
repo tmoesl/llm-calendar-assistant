@@ -1,24 +1,26 @@
+"""
+Settings Module
+
+Main settings for the application using Pydantic Settings.
+"""
+
 from functools import lru_cache
 
-from dotenv import load_dotenv
-from pydantic_settings import BaseSettings
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from app.config.app_config import AppConfig
 from app.config.llm_config import LLMConfig
-
-load_dotenv()
-
-"""
-Main settings for the application using Pydantic Settings.
-"""
 
 
 class Settings(BaseSettings):
     """Main settings for the application."""
 
     app_name: str = "GenAI Calendar Assistant"
-    llm: LLMConfig = LLMConfig()
-    app: AppConfig = AppConfig()
+    llm: LLMConfig = Field(default_factory=LLMConfig)
+    app: AppConfig = Field(default_factory=AppConfig)
+
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
 @lru_cache

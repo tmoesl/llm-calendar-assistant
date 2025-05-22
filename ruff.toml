@@ -1,0 +1,29 @@
+exclude = [
+  ".git",
+  ".venv",
+  "venv",
+  "__pycache__",
+  ".mypy_cache",
+  ".ruff_cache",
+  ".ipynb_checkpoints",
+  "build",
+  "_build",
+  ".vscode"
+]
+
+line-length = 100
+target-version = "py312"
+indent-width = 4
+
+[lint]
+select = [
+  "E", "F", "I", "B", "UP", "SIM", "C4", "TID", "ERA", "PL"
+]
+
+[format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+skip-magic-trailing-comma = false
+docstring-code-format = true
+docstring-code-line-length = "dynamic"
