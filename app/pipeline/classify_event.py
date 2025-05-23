@@ -5,25 +5,14 @@ Node for event classification in the pipeline.
 Classifies the type of event requested.
 """
 
-from enum import Enum
 from typing import Any
-
-from pydantic import BaseModel, Field, ValidationError
 
 from app.config.settings import get_settings
 from app.core.node import Node
 from app.core.schema.task import TaskContext
+from app.pipeline.schema.classify import ClassifyContext, ClassifyResponse
 from app.services.llm_factory import LLMFactory
 from app.services.log_service import logger
-
-
-class EventType(str, Enum):
-    """Enum for event types"""
-
-    CREATE_EVENT = "create_event"
-    UPDATE_EVENT = "update_event"
-    DELETE_EVENT = "delete_event"
-    VIEW_EVENT = "view_event"
 
 
 class ClassifyEvent(Node):
@@ -36,34 +25,14 @@ class ClassifyEvent(Node):
         self.llm = LLMFactory("openai")
         logger.info("Initialized %s", self.node_name)
 
-    class ContextModel(BaseModel):
-        """Input context for intent classification"""
-
-        user_input: str = Field(description="Original calendar request from user")
-
-    class ResponseModel(BaseModel):
-        """LLM response for intent classification"""
-
-        # Intent classification
-        has_intent: bool = Field(description="Whether a clear calendar intent was detected")
-        request_type: EventType | None = Field(
-            default=None, description="Classified intent type if clear intent detected"
-        )
-
-        # Assessment details
-        confidence_score: float = Field(
-            ge=0.0, le=1.0, description="Confidence in intent classification"
-        )
-        reasoning: str = Field(description="Detailed explanation of classification results")
-
-    def get_context(self, task_context: TaskContext) -> ContextModel:
+    def get_context(self, task_context: TaskContext) -> ClassifyContext:
         """Extract context for intent classification"""
-        return self.ContextModel(user_input=task_context.event.request)
+        return ClassifyContext(request=task_context.event.request)
 
-    def create_completion(self, context: ContextModel) -> tuple[ResponseModel, Any]:
+    def create_completion(self, context: ClassifyContext) -> tuple[ClassifyResponse, Any]:
         """Get validation results from LLM"""
         response_model, completion = self.llm.create_completion(
-            response_model=self.ResponseModel,
+            response_model=ClassifyResponse,
             messages=[
                 {
                     "role": "system",
@@ -147,7 +116,7 @@ class ClassifyEvent(Node):
 
                     - **Input**: "Show me my calendar for next week"
                     - **Output**:
-                    {
+                        {
                         "request_type": "view_event",
                         "has_intent": true,
                         "reasoning": "Detected the phrase 'Show me', which maps to a view intent.",
@@ -161,7 +130,7 @@ class ClassifyEvent(Node):
                     - Use reasoning to explain ambiguous cases and maintain transparency in classification decisions.
                     """,
                 },
-                {"role": "user", "content": context.user_input},
+                {"role": "user", "content": context.request},
             ],
         )
         return response_model, completion
@@ -194,17 +163,13 @@ class ClassifyEvent(Node):
 
             self._log_classification_results(is_classified, response_model)
 
-        except ValidationError as ve:
-            logger.error("Validation error: %s", str(ve))
-            task_context.nodes[self.node_name] = {"status": "error", "error": str(ve)}
-
         except Exception as e:
             logger.error("Unexpected error in validation: %s", str(e))
             task_context.nodes[self.node_name] = {"status": "error", "error": str(e)}
 
         return task_context
 
-    def _log_classification_results(self, is_valid: bool, response: ResponseModel):
+    def _log_classification_results(self, is_valid: bool, response: ClassifyResponse):
         """Log classification results with summary and details"""
         if is_valid:
             logger.info(

@@ -8,11 +8,9 @@ Pydantic response model is validated before passed to the next node in the pipel
 
 from typing import Any
 
-from pydantic import BaseModel, Field, ValidationError
-
 from app.core.node import Node
-from app.core.schema.llm import LlmCreateEvent
 from app.core.schema.task import TaskContext
+from app.pipeline.schema.create import CreateContext, CreateResponse
 from app.services.llm_factory import LLMFactory
 from app.services.log_service import logger
 from app.utils.datetime_utils import get_datetime_reference
@@ -26,34 +24,25 @@ class CreateEventExtractor(Node):
         self.llm = LLMFactory("openai")
         logger.info("Initialized %s", self.node_name)
 
-    class ContextModel(BaseModel):
-        """Input context for event extraction"""
-
-        user_input: str = Field(description="Original calendar request from user")
-        datetime_ref: dict = Field(description="Current datetime and timezone reference")
-
-    class ResponseModel(LlmCreateEvent):
-        """Inherits from LlmCreateEvent"""
-
-    def get_context(self, task_context: TaskContext) -> ContextModel:
+    def get_context(self, task_context: TaskContext) -> CreateContext:
         """Extract context for event creation"""
-        return self.ContextModel(
-            user_input=task_context.event.request, datetime_ref=get_datetime_reference()
+        return CreateContext(
+            request=task_context.event.request, datetime_ref=get_datetime_reference()
         )
 
-    def create_completion(self, context: ContextModel) -> tuple[ResponseModel, Any]:
+    def create_completion(self, context: CreateContext) -> tuple[CreateResponse, Any]:
         """Extract and normalize event details using LLM with upfront datetime reference"""
 
         response_model, completion = self.llm.create_completion(
-            response_model=self.ResponseModel,
+            response_model=CreateResponse,
             messages=[
                 {
                     "role": "system",
                     "content": f"""Extract and normalize calendar event details into Google Calendar API format.
 
                     # Current Reference Information
-                    Current datetime: {context.datetime_ref["current_datetime"]}
-                    System timezone: {context.datetime_ref["timezone"]}
+                    Current datetime: {context.datetime_ref.dateTime}
+                    System timezone: {context.datetime_ref.timeZone}
 
                     # Tasks
 
@@ -142,7 +131,7 @@ class CreateEventExtractor(Node):
 
                     """,
                 },
-                {"role": "user", "content": context.user_input},
+                {"role": "user", "content": context.request},
             ],
         )
 
@@ -163,16 +152,13 @@ class CreateEventExtractor(Node):
 
             self._log_results(response_model)
 
-        except ValidationError as ve:
-            logger.error("Event data validation error: %s", str(ve))
-            task_context.nodes[self.node_name] = {"status": "error", "error": str(ve)}
         except Exception as e:
             logger.error("Extraction error: %s", str(e))
             task_context.nodes[self.node_name] = {"status": "error", "error": str(e)}
 
         return task_context
 
-    def _log_results(self, response: ResponseModel):
+    def _log_results(self, response: CreateResponse):
         """Log extraction results"""
         logger.info("Extracted event details: '%s'", response.summary)
         if response.parsing_issues:

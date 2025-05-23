@@ -10,10 +10,8 @@ from typing import Self
 
 from pydantic import BaseModel, EmailStr, Field, model_validator
 
-from app.core.schema.llm import (
-    LlmCreateEvent,
-    LlmEventLookup,
-)
+from app.core.schema.event import EventLookup
+from app.pipeline.schema.create import CreateResponse
 
 
 class GoogleDateTime(BaseModel):
@@ -41,6 +39,8 @@ class GoogleAttendee(BaseModel):
     """Google Calendar API attendee specification"""
 
     email: EmailStr
+    displayName: str | None = None
+    responseStatus: str | None = None
 
 
 class GoogleCreateEventRequest(BaseModel):
@@ -82,10 +82,31 @@ class GoogleLookupEventRequest(BaseModel):
     maxResults: int = Field(default=10, description="Maximum number of events to return")
 
 
+class GoogleEventResponse(BaseModel):
+    """Google Calendar API event response"""
+
+    id: str = Field(description="The unique identifier for the event")
+    summary: str = Field(description="Title of the event")
+    description: str | None = Field(default=None, description="Description of the event")
+    start: GoogleDateTime = Field(description="Start time of the event")
+    end: GoogleDateTime = Field(description="End time of the event")
+    location: str | None = Field(default=None, description="Location of the event")
+    attendees: list[GoogleAttendee] | None = Field(default=None, description="List of attendees")
+    htmlLink: str = Field(description="URL to view the event in Google Calendar")
+
+
+class GoogleLookupEventResponse(BaseModel):
+    """Google Calendar API lookup response"""
+
+    items: list[GoogleEventResponse] = Field(
+        default_factory=list, description="List of events found in the calendar"
+    )
+
+
 def create_event_model_to_request(
-    model: LlmCreateEvent,
+    model: CreateResponse,
 ) -> GoogleCreateEventRequest:
-    """Convert LlmCreateEvent to GoogleCreateEventRequest"""
+    """Convert CreateResponse to GoogleCreateEventRequest"""
     return GoogleCreateEventRequest(
         summary=model.summary,
         description=model.description,
@@ -97,10 +118,10 @@ def create_event_model_to_request(
 
 
 def lookup_event_model_to_request(
-    model: LlmEventLookup,
+    model: EventLookup,
 ) -> GoogleLookupEventRequest:
     """
-    Convert LlmEventLookup to GoogleLookupEventRequest.
+    Convert EventLookup to GoogleLookupEventRequest.
     Used for searching events by time window and optional context terms.
 
     Note: For direct event ID lookups, use events.get instead of events.list

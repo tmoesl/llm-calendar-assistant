@@ -1,27 +1,27 @@
 """
-LLM Response Schema Module
+Core Event Models Module
 
-This module defines the Pydantic models used to parse and validate responses from the LLM.
-It specifies the type-safe structure for event fields, time windows, and search criteria,
-and includes metadata for capturing parsing confidence, reasoning, and potential issues.
+This module defines the core event models used across the application.
+It provides base models for event datetime handling, time windows, and common event fields.
+These models are independent of specific operations (create, delete, etc).
 """
 
 from datetime import datetime, timedelta
+from enum import Enum
 from typing import Self
 from zoneinfo import ZoneInfo, available_timezones
 
 from dateutil.parser import isoparse
-from pydantic import (
-    BaseModel,
-    EmailStr,
-    Field,
-    computed_field,
-    field_validator,
-    model_validator,
-)
+from pydantic import BaseModel, EmailStr, Field, computed_field, field_validator, model_validator
 
-# ========================== BASE TIME MODELS ==========================
-# Core models for handling time and timezone validation
+
+class EventType(str, Enum):
+    """Enum for event types"""
+
+    CREATE_EVENT = "create_event"
+    UPDATE_EVENT = "update_event"
+    DELETE_EVENT = "delete_event"
+    VIEW_EVENT = "view_event"
 
 
 class EventDateTime(BaseModel):
@@ -63,11 +63,7 @@ class EventDateTime(BaseModel):
         try:
             dt = isoparse(self.dateTime)
             tz = ZoneInfo(self.timeZone)
-
-            # Convert to the specified timezone
             dt_in_tz = dt.astimezone(tz)
-
-            # Get the actual offset at that time (accounts for DST)
             actual_offset = dt.utcoffset()
             expected_offset = dt_in_tz.utcoffset()
 
@@ -77,7 +73,6 @@ class EventDateTime(BaseModel):
                     f"timezone '{self.timeZone}' offset ({expected_offset}) "
                     f"at {self.dateTime}"
                 )
-
             return self
         except Exception as exc:
             if not isinstance(exc, ValueError):
@@ -90,7 +85,7 @@ class EventDateTime(BaseModel):
         return dt.astimezone(ZoneInfo(self.timeZone))
 
 
-class TimeWindow(BaseModel):
+class EventTimeWindow(BaseModel):
     """Time window for event search"""
 
     center: EventDateTime = Field(description="Center of the time window")
@@ -127,15 +122,11 @@ class TimeWindow(BaseModel):
         return self
 
 
-# ========================== BASE EVENT MODELS ==========================
-# Core models for event fields and references
-
-
-class EventReference(BaseModel):
-    """Methods to identify an existing event"""
+class EventLookup(BaseModel):
+    """Base model for event lookup operations with search criteria"""
 
     event_id: str | None = Field(description="Google calendar event ID")
-    time_window: TimeWindow | None = Field(description="Time window to search for the event")
+    time_window: EventTimeWindow | None = Field(description="Time window to search for the event")
     context_terms: list[str] = Field(
         default_factory=list, description="Keywords to identify the event"
     )
@@ -184,88 +175,12 @@ class EventFields(BaseModel):
             raise ValueError("Duplicate attendee email addresses found")
         return self
 
-
-# ========================== LLM OPERATION MODELS ==========================
-# Models used for LLM-based operations, including parsing and validation metadata
-
-
-class LlmCreateEvent(EventFields):
-    """LLM model for event creation with required fields and parsing metadata"""
-
-    # Required fields
-    summary: str = Field(description="Event title/summary")
-    start: EventDateTime = Field(description="Event start time")
-    end: EventDateTime = Field(description="Event end time")
-
-    # Debug metadata
-    parsing_issues: list[str] = Field(default_factory=list)
-    reasoning: str = Field(description="Explanation of extraction and normalization decisions")
-
     @model_validator(mode="after")
-    def validate_event(self) -> Self:
-        """Ensure start < end"""
-        if self.start.parsed_datetime() >= self.end.parsed_datetime():
+    def validate_event_times(self) -> Self:
+        """Ensure start < end if both are provided"""
+        if self.start and self.end and self.start.parsed_datetime() >= self.end.parsed_datetime():
             raise ValueError("Start time must be before end time")
         return self
-
-    model_config = {
-        "json_schema_extra": {
-            "example": {
-                "summary": "Team Meeting",
-                "start": {
-                    "dateTime": "2025-05-07T10:00:00+10:00",
-                    "timeZone": "Australia/Sydney",
-                },
-                "end": {
-                    "dateTime": "2025-05-07T11:00:00+10:00",
-                    "timeZone": "Australia/Sydney",
-                },
-                "description": "Monthly team sync",
-                "location": "Conference Room A",
-                "attendees": [
-                    {"email": "alex@example.com"},
-                    {"email": "john@example.com"},
-                ],
-                "parsing_issues": [],
-                "reasoning": "Successfully extracted and normalized all fields. Used reference time to resolve 'tomorrow' to specific date.",
-            }
-        }
-    }
-
-
-class LlmDeleteEvent(EventReference):
-    """LLM model for event deletion with parsing metadata"""
-
-    # Debug metadata
-    parsing_issues: list[str] = Field(default_factory=list)
-    reasoning: str = Field(description="Explanation of extraction and normalization decisions")
-
-    model_config = {
-        "json_schema_extra": {
-            "example": {
-                "event_id": "abc123xyz789",  # Direct ID lookup
-                "time_window": {  # Time-based lookup
-                    "center": {
-                        "dateTime": "2025-05-07T15:00:00+10:00",
-                        "timeZone": "Australia/Sydney",
-                    },
-                    "buffer_minutes": 15,
-                    "original_reference": "the meeting at 3pm",
-                },
-                "context_terms": ["team", "meeting", "monthly"],  # Search terms
-                "parsing_issues": [],
-                "reasoning": "Found event ID in user's reference. Also extracted time and context as fallback.",
-            }
-        }
-    }
-
-
-class LlmEventLookup(EventReference):
-    """LLM model for looking up events using search criteria"""
-
-    # Debug metadata
-    parsing_issues: list[str] = Field(default_factory=list)
-    reasoning: str = Field(description="Explanation of extraction and normalization decisions")
 
 
 # computed_field: Exposes them in the model_dump() output without being part of the model's schema.

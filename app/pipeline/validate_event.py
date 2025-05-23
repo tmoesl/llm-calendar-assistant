@@ -7,11 +7,10 @@ Validates security and legitimacy of calendar requests.
 
 from typing import Any
 
-from pydantic import BaseModel, Field
-
 from app.config.settings import get_settings
 from app.core.node import Node
 from app.core.schema.task import TaskContext
+from app.pipeline.schema.validate import ValidateContext, ValidateResponse
 from app.services.llm_factory import LLMFactory
 from app.services.log_service import logger
 
@@ -26,40 +25,14 @@ class ValidateEvent(Node):
         self.llm = LLMFactory("openai")
         logger.info("Initialized %s", self.node_name)
 
-    class ContextModel(BaseModel):
-        """Input context for intent classification"""
-
-        user_input: str = Field(description="Original calendar request from user")
-
-    class ResponseModel(BaseModel):
-        """Response model for security check"""
-
-        # Security validation
-        is_safe: bool = Field(description="Whether the input is considered safe")
-        risk_flags: list[str] = Field(description="List of identified security risks")
-
-        # Calendar request validation
-        is_valid: bool = Field(description="Whether the input is legitimate calendar request")
-        invalid_reason: str = Field(
-            description="Reason why request is not calendar-related if applicable"
-        )
-
-        # Combined validation score
-        confidence_score: float = Field(
-            ge=0.0,
-            le=1.0,
-            description="Confidence in calender validation and security assessment",
-        )
-        reasoning: str = Field(description="Detailed explanation of validation results")
-
-    def get_context(self, task_context: TaskContext) -> ContextModel:
+    def get_context(self, task_context: TaskContext) -> ValidateContext:
         """Extract context for validation"""
-        return self.ContextModel(user_input=task_context.event.request)
+        return ValidateContext(request=task_context.event.request)
 
-    def create_completion(self, context: ContextModel) -> tuple[ResponseModel, Any]:
+    def create_completion(self, context: ValidateContext) -> tuple[ValidateResponse, Any]:
         """Get validation results from LLM"""
         response_model, completion = self.llm.create_completion(
-            response_model=self.ResponseModel,
+            response_model=ValidateResponse,
             messages=[
                 {
                     "role": "system",
@@ -162,7 +135,7 @@ class ValidateEvent(Node):
                     - Distinguish these from vague or generic inputs like "calendar please" or "help".
                     """,
                 },
-                {"role": "user", "content": context.user_input},
+                {"role": "user", "content": context.request},
             ],
         )
         return response_model, completion
@@ -195,7 +168,7 @@ class ValidateEvent(Node):
 
         return task_context
 
-    def _log_validation_results(self, is_valid: bool, response_model: ResponseModel):
+    def _log_validation_results(self, is_valid: bool, response_model: ValidateResponse):
         """Log validation results with summary and optional details"""
         if is_valid:
             logger.info("Validation passed (confidence: %.2f)", response_model.confidence_score)

@@ -6,10 +6,9 @@ Handles the creation of calendar events using the Google Calendar API.
 """
 
 from app.calendar.auth import GoogleAuthClient
-from app.calendar.schema import create_event_model_to_request
+from app.calendar.schema import GoogleEventResponse, create_event_model_to_request
 from app.calendar.service import GoogleCalendarService
 from app.core.node import Node
-from app.core.schema.llm import LlmCreateEvent
 from app.core.schema.task import TaskContext
 from app.services.log_service import logger
 
@@ -31,7 +30,7 @@ class CreateEventExecutor(Node):
                 raise ValueError("Missing or failed event extraction")
 
             # Get validated event model
-            event_model: LlmCreateEvent = extractor_result["response_model"]
+            event_model = extractor_result["response_model"]
 
             # Convert to Google API request model
             create_request = create_event_model_to_request(model=event_model)
@@ -41,10 +40,13 @@ class CreateEventExecutor(Node):
             calendar_service = GoogleCalendarService(service)
 
             # Create the event
-            created_event = calendar_service.create_event(
+            created_event_raw = calendar_service.create_event(
                 calendar_id="primary",
                 event_body=create_request.model_dump(exclude_none=True),
             )
+
+            # Validate response with schema
+            created_event = GoogleEventResponse(**created_event_raw)
 
             # Store result
             task_context.nodes[self.node_name] = {
@@ -54,8 +56,8 @@ class CreateEventExecutor(Node):
 
             logger.info(
                 "Created event: '%s' (id: %s)",
-                created_event.get("summary", "Unknown"),
-                created_event.get("id"),
+                created_event.summary,
+                created_event.id,
             )
 
         except Exception as e:

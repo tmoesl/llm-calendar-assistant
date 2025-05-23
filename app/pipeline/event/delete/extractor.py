@@ -8,11 +8,9 @@ Pydantic response model is validated before passed to the next node in the pipel
 
 from typing import Any
 
-from pydantic import BaseModel, Field, ValidationError
-
 from app.core.node import Node
-from app.core.schema.llm import LlmDeleteEvent
 from app.core.schema.task import TaskContext
+from app.pipeline.schema.delete import DeleteContext, DeleteResponse
 from app.services.llm_factory import LLMFactory
 from app.services.log_service import logger
 from app.utils.datetime_utils import get_datetime_reference
@@ -26,34 +24,25 @@ class DeleteEventExtractor(Node):
         self.llm = LLMFactory("openai")
         logger.info("Initialized %s", self.node_name)
 
-    class ContextModel(BaseModel):
-        """Input context for deletion criteria extraction"""
-
-        user_input: str = Field(description="Original calendar request from user")
-        datetime_ref: dict = Field(description="Current datetime and timezone reference")
-
-    class ResponseModel(LlmDeleteEvent):
-        """Inherits from LlmDeleteEvent"""
-
-    def get_context(self, task_context: TaskContext) -> ContextModel:
+    def get_context(self, task_context: TaskContext) -> DeleteContext:
         """Extract context for deletion creation"""
-        return self.ContextModel(
-            user_input=task_context.event.request, datetime_ref=get_datetime_reference()
+        return DeleteContext(
+            request=task_context.event.request, datetime_ref=get_datetime_reference()
         )
 
-    def create_completion(self, context: ContextModel) -> tuple[ResponseModel, Any]:
+    def create_completion(self, context: DeleteContext) -> tuple[DeleteResponse, Any]:
         """Extract search criteria using LLM"""
 
         response_model, completion = self.llm.create_completion(
-            response_model=self.ResponseModel,
+            response_model=DeleteResponse,
             messages=[
                 {
                     "role": "system",
                     "content": f"""Extract relevant search criteria to identify calendar events for deletion.
 
                     # Current Reference Information
-                    Current datetime: {context.datetime_ref["current_datetime"]}
-                    System timezone: {context.datetime_ref["timezone"]}
+                    Current datetime: {context.datetime_ref.dateTime}
+                    System timezone: {context.datetime_ref.timeZone}
 
                     # Tasks
 
@@ -169,7 +158,7 @@ class DeleteEventExtractor(Node):
                     - Always include a `reasoning` field explaining the logic used to resolve time and timezone.
                     """,
                 },
-                {"role": "user", "content": context.user_input},
+                {"role": "user", "content": context.request},
             ],
         )
 
@@ -190,16 +179,13 @@ class DeleteEventExtractor(Node):
 
             self._log_results(response_model)
 
-        except ValidationError as ve:
-            logger.error("Event data validation error: %s", str(ve))
-            task_context.nodes[self.node_name] = {"status": "error", "error": str(ve)}
         except Exception as e:
             logger.error("Failed to extract deletion criteria: %s", str(e))
             task_context.nodes[self.node_name] = {"status": "error", "error": str(e)}
 
         return task_context
 
-    def _log_results(self, response: ResponseModel):
+    def _log_results(self, response: DeleteResponse):
         """Log extraction results"""
         # Log primary search criteria
         if response.event_id:

@@ -7,8 +7,8 @@ Routes events based on event type classification.
 
 from app.core.node import Node
 from app.core.router import Router, RouterNode
+from app.core.schema.event import EventType
 from app.core.schema.task import TaskContext
-from app.pipeline.classify_event import EventType
 from app.pipeline.event.create.extractor import CreateEventExtractor
 from app.pipeline.event.delete.extractor import DeleteEventExtractor
 
