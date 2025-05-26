@@ -23,6 +23,9 @@ class ClassifyResponse(BaseModel):
     request_type: EventType | None = Field(
         default=None, description="Classified intent type if clear intent detected"
     )
+    is_bulk_operation: bool = Field(
+        default=False, description="Whether the request is a bulk operation"
+    )
 
     # Assessment details
     confidence_score: float = Field(

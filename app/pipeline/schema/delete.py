@@ -14,6 +14,9 @@ class DeleteContext(BaseModel):
 
     request: str = Field(description="Original request body for the event")
     datetime_ref: EventDateTime = Field(description="Current datetime and timezone reference")
+    is_bulk_operation: bool = Field(
+        default=False, description="Whether the request is a bulk operation"
+    )
 
 
 class DeleteResponse(EventLookup):

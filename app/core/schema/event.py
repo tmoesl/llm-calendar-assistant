@@ -134,10 +134,8 @@ class EventLookup(BaseModel):
     @model_validator(mode="after")
     def validate_lookup_criteria(self) -> Self:
         """Ensure we have sufficient criteria to perform a lookup"""
-        if not self.event_id and not (self.time_window and self.context_terms):
-            raise ValueError(
-                "Need either event_id or both time_window and context terms for lookup"
-            )
+        if not self.event_id and not self.time_window:
+            raise ValueError("Need either event_id or time_window for lookup")
         return self
 
 
