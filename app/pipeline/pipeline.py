@@ -11,8 +11,8 @@ from app.pipeline.classify_event import ClassifyEvent
 from app.pipeline.event.create.executor import CreateEventExecutor
 from app.pipeline.event.create.extractor import CreateEventExtractor
 from app.pipeline.event.delete.executor import DeleteEventExecutor
-from app.pipeline.event.delete.extractor import DeleteEventExtractor
 from app.pipeline.event.lookup.executor import LookupEventExecutor
+from app.pipeline.event.lookup.extractor import LookupEventExtractor
 from app.pipeline.route_event import RouteEvent
 from app.pipeline.validate_event import ValidateEvent
 
@@ -47,7 +47,7 @@ class CalendarPipeline(Pipeline):
             # Event Routing
             NodeConfig(
                 node=RouteEvent,
-                connections=[CreateEventExtractor, DeleteEventExtractor],
+                connections=[CreateEventExtractor, LookupEventExtractor],
                 description="Extract raw event details",
                 is_router=True,
             ),
@@ -63,9 +63,9 @@ class CalendarPipeline(Pipeline):
                 description="Execute event creation in Google Calendar",
             ),
             NodeConfig(
-                node=DeleteEventExtractor,
+                node=LookupEventExtractor,
                 connections=[LookupEventExecutor],
-                description="Extract delete-specific details",
+                description="Extract generic lookup details for an event",
             ),
             NodeConfig(
                 node=LookupEventExecutor,

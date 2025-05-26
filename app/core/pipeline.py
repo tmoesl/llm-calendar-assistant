@@ -86,11 +86,12 @@ class Pipeline(ABC):
         """
         task_context = TaskContext(event=event)
         task_context.metadata["nodes"] = self.nodes
-        current_node_class = self.pipeline_schema.start
+        current_node_class: type[Node] | None = self.pipeline_schema.start
 
         try:
             while current_node_class:
-                current_node = self.nodes[current_node_class].node()  # Instantiate the node
+                node_config = self.nodes[current_node_class]
+                current_node = node_config.node()  # Instantiate the node
                 with self.node_context(current_node_class.__name__):
                     task_context = current_node.process(task_context)
 

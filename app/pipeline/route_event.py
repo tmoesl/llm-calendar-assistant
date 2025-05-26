@@ -10,7 +10,7 @@ from app.core.router import Router, RouterNode
 from app.core.schema.event import EventType
 from app.core.schema.task import TaskContext
 from app.pipeline.event.create.extractor import CreateEventExtractor
-from app.pipeline.event.delete.extractor import DeleteEventExtractor
+from app.pipeline.event.lookup.extractor import LookupEventExtractor
 
 
 class RouteEvent(Router):
@@ -38,5 +38,5 @@ class DeleteEventRouter(RouterNode):
     def determine_next_node(self, task_context: TaskContext) -> type[Node] | None:
         classification = task_context.nodes["ClassifyEvent"]["response_model"]
         if classification.request_type == EventType.DELETE_EVENT:
-            return DeleteEventExtractor
+            return LookupEventExtractor
         return None

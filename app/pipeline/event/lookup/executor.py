@@ -27,7 +27,7 @@ class LookupEventExecutor(Node):
         """Look up events using search criteria."""
         try:
             # Get search criteria from extractor
-            extractor_result = task_context.nodes.get("DeleteEventExtractor", {})
+            extractor_result = task_context.nodes.get("LookupEventExtractor", {})
             if extractor_result.get("status") != "success":
                 raise ValueError("Missing or failed lookup criteria")
 
