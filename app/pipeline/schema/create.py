@@ -6,7 +6,7 @@ This module defines the models used for event creation.
 
 from pydantic import BaseModel, Field
 
-from app.core.schema.event import EventDateTime, EventFields
+from app.core.schema.event import AllDayEventDate, EventDateTime, EventFields
 
 
 class CreateContext(BaseModel):
@@ -21,8 +21,8 @@ class CreateResponse(EventFields):
 
     # Required fields
     summary: str = Field(description="Event title/summary")
-    start: EventDateTime = Field(description="Event start time")
-    end: EventDateTime = Field(description="Event end time")
+    start: EventDateTime | AllDayEventDate = Field(description="Event start time or date")
+    end: EventDateTime | AllDayEventDate = Field(description="Event end time or date")
 
     # Debug metadata
     parsing_issues: list[str] = Field(default_factory=list)

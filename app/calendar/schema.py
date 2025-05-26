@@ -10,7 +10,7 @@ from typing import Self
 
 from pydantic import BaseModel, EmailStr, Field, model_validator
 
-from app.core.schema.event import EventLookup
+from app.core.schema.event import AllDayEventDate, EventDateTime, EventLookup
 from app.pipeline.schema.create import CreateResponse
 
 
@@ -107,12 +107,26 @@ def create_event_model_to_request(
     model: CreateResponse,
 ) -> GoogleCreateEventRequest:
     """Convert CreateResponse to GoogleCreateEventRequest"""
+    start_input = {}
+    if isinstance(model.start, EventDateTime):
+        start_input["dateTime"] = model.start.dateTime
+        start_input["timeZone"] = model.start.timeZone
+    elif isinstance(model.start, AllDayEventDate):
+        start_input["date"] = model.start.date
+
+    end_input = {}
+    if isinstance(model.end, EventDateTime):
+        end_input["dateTime"] = model.end.dateTime
+        end_input["timeZone"] = model.end.timeZone
+    elif isinstance(model.end, AllDayEventDate):
+        end_input["date"] = model.end.date
+
     return GoogleCreateEventRequest(
         summary=model.summary,
         description=model.description,
         location=model.location,
-        start=GoogleDateTime(dateTime=model.start.dateTime, timeZone=model.start.timeZone),
-        end=GoogleDateTime(dateTime=model.end.dateTime, timeZone=model.end.timeZone),
+        start=GoogleDateTime(**start_input),
+        end=GoogleDateTime(**end_input),
         attendees=[GoogleAttendee(email=att.email) for att in (model.attendees or [])] or None,
     )
 

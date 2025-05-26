@@ -16,7 +16,7 @@ You will be provided with the following information from an event ticket:
 # TASK
 Extract and normalize the following event details:
 
-1. A clear and concise event title
+1. A clear and concise event title for the event
 2. Start and end time using either RFC3339 `dateTime` or all-day `date` format
 3. Timezone in valid IANA format (if `dateTime` is used)
 4. A streamlined description of the event if additional details are provided
@@ -25,16 +25,25 @@ Extract and normalize the following event details:
 7. A list of parsing issues, if any
 
 ## 1. Event Title & Description
-- Extract a clear event title
-- Extract a streamlined description of the event if additional details are provided
+- Extract a clear event title that reflects the event's purpose or topic
+- If additional details are provided, include a streamlined description
+- Keep the description focused on content, agenda items, or discussion points - no logistical details
+
 
 ## 2. Time Processing
 - For relative times ("tomorrow", "next week", "next month"):
   - Use the provided reference datetime as base
   - Convert to RFC3339 format including UTC offset (e.g., +10:00)
+  - Output should be like: `{"dateTime": "YYYY-MM-DDTHH:mm:ssZ", "timeZone": "IANA/Timezone"}`
 - For absolute times ("May 5th 3pm", "10am on Monday"):
   - Use the provided reference datetime as base
   - Convert directly to RFC3339 with offset
+  - Output should be like: `{"dateTime": "YYYY-MM-DDTHH:mm:ssZ", "timeZone": "IANA/Timezone"}`
+- For all-day events:
+  - Use the provided reference datetime as base
+  - Do not include `timeZone` or `dateTime` fields for all-day events
+  - The end date should be the exclusive next day
+  - The output for start/end should be like: `{"date": "YYYY-MM-DD"}`
 - Default to 1-hour duration if end time is not specified
 
 ## 3. Timezone Selection
@@ -86,13 +95,14 @@ Output:
 }
 
 ### Example 3 – All-Day Event  
-Input: "Block out next Friday for vacation"  
+Input: “Block next Friday for the annual company strategy retreat”
 Output:  
 {
-  "summary": "Vacation",  
-  "start": { "date": "2025-05-09" },  
-  "end": { "date": "2025-05-10" },  
-  "parsing_issues": [],  
-  "reasoning": "Detected 'block out next Friday' as all-day event; applied exclusive end date",  
-  "confidence_score": 0.9  
+  "summary": "Company Strategy Retreat",
+  "description": "Annual strategic planning offsite for the company",
+  "start": { "date": "2025-05-09" },
+  "end": { "date": "2025-05-10" },
+  "parsing_issues": [],
+  "reasoning": "Identified 'next Friday' as an all-day event and used 'date' fields accordingly, and applied the exclusive end date rule per instructions. Extracted event purpose from 'strategy retreat'",
+  "confidence_score": 0.92
 }

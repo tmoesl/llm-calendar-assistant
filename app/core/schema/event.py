@@ -24,6 +24,22 @@ class EventType(str, Enum):
     VIEW_EVENT = "view_event"
 
 
+class AllDayEventDate(BaseModel):
+    """Model for all-day event dates"""
+
+    date: str = Field(description="All-day event date in YYYY-MM-DD format")
+
+    @field_validator("date")
+    @classmethod
+    def validate_date_format(cls, v: str) -> str:
+        """Validate YYYY-MM-DD date string"""
+        try:
+            datetime.strptime(v, "%Y-%m-%d")
+            return v
+        except ValueError as exc:
+            raise ValueError(f"Invalid date string: {v}. Must be in format YYYY-MM-DD") from exc
+
+
 class EventDateTime(BaseModel):
     """Event time specification with comprehensive validation"""
 
@@ -149,8 +165,8 @@ class EventFields(BaseModel):
     """Common event fields"""
 
     summary: str | None = Field(description="Event title/summary")
-    start: EventDateTime | None = Field(description="Event start time")
-    end: EventDateTime | None = Field(description="Event end time")
+    start: EventDateTime | AllDayEventDate | None = Field(description="Event start time or date")
+    end: EventDateTime | AllDayEventDate | None = Field(description="Event end time or date")
     description: str | None = Field(description="Short statement of key topics/tasks")
     location: str | None = Field(description="Location of the event")
     attendees: list[Attendee] = Field(default_factory=list, description="List of attendees")
@@ -175,9 +191,27 @@ class EventFields(BaseModel):
 
     @model_validator(mode="after")
     def validate_event_times(self) -> Self:
-        """Ensure start < end if both are provided"""
-        if self.start and self.end and self.start.parsed_datetime() >= self.end.parsed_datetime():
-            raise ValueError("Start time must be before end time")
+        """Ensure start < end if both are provided, and types match"""
+        if self.start and self.end:
+            # 1. Ensure types are consistent
+            if type(self.start) is not type(self.end):
+                raise ValueError(
+                    "Start and end fields must be of the same type: "
+                    "either both timed (EventDateTime) or both all-day (AllDayEventDate)."
+                )
+
+            # 2. Validate order based on the common type
+            if isinstance(self.start, EventDateTime):
+                if self.start.parsed_datetime() >= self.end.parsed_datetime():  # type: ignore
+                    raise ValueError("Start time must be before end time for timed events")
+            elif isinstance(self.start, AllDayEventDate):
+                start_date_obj = datetime.strptime(self.start.date, "%Y-%m-%d").date()
+                end_date_obj = datetime.strptime(self.end.date, "%Y-%m-%d").date()  # type: ignore
+                if start_date_obj >= end_date_obj:
+                    raise ValueError(
+                        "For all-day events, start date must be strictly before end date. "
+                        "End date should be the exclusive next day."
+                    )
         return self
 
 
