@@ -1,102 +1,54 @@
-# Byte-compiled / optimized / DLL files
+# ====== Bytecode ==========================
 __pycache__/
 *.py[cod]
 
-# C extensions
-*.so
-
-# Distribution / packaging
-.Python
+# ====== Virtual environments ==============
+.venv/
+venv/
 env/
+ENV/
+
+# ====== Build artifacts and packaging =====
 build/
-develop-eggs/
 dist/
-downloads/
-eggs/
 .eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
 *.egg-info/
-.installed.cfg
 *.egg
+*.whl
 
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
-*.manifest
-*.spec
-
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-
-# Translations
-*.mo
-*.pot
-
-# Django stuff:
+# ====== Logs and runtime files ============
 *.log
-
-# Sphinx documentation
-docs/_build/
-
-# PyBuilder
-target/
-
-# DotEnv configuration
-.env
-
-# Database
+*.pid
 *.db
 *.rdb
 
-# Pycharm
-.idea
+# ====== Tool caches =======================
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.cache/
 
-# VS Code
+# ====== IDE/editor configs ================
 .vscode/
+.idea/
 *.code-workspace
 
-# Spyder
-.spyproject/
 
-# Jupyter NB Checkpoints
+# ====== Jupyter notebooks =================
 .ipynb_checkpoints/
 
-# exclude data from source control by default
-#/data/
-
-# Mac OS-specific storage files
-.DS_Store
-
-# vim
-*.swp
-*.swo
-
-# Mypy cache
-.mypy_cache/
-
-# Google Calendar API Credentials
+# ====== Env variables and secrets =========
+.env
+.env.*
 credentials.json
 token.json
 
-# Virtual Environment
-venv/
-ENV/
+# ====== OS-generated files ================
+.DS_Store
 
-# Others
-prd.md
-calendar_assistant.log
+# ====== Vim swap files ====================
+*.swp
+*.swo
+
+# ====== Intermediate test files ===========
+testrun.py
