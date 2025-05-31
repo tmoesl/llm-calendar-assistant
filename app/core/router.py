@@ -54,7 +54,6 @@ class Router(Node):
         next_node_class = self.route(task_context)
         task_context.nodes[self.node_name] = {
             "next_node": next_node_class.__name__ if next_node_class else None,
-            "status": "success" if next_node_class else "failed",
         }
         return task_context
 

@@ -8,6 +8,7 @@ Pydantic response model is validated before passed to the next node in the pipel
 
 from typing import Any
 
+from app.core.exceptions import ErrorMessages, LLMServiceError
 from app.core.node import Node
 from app.core.schema.task import TaskContext
 from app.pipeline.schema.create import CreateContext, CreateResponse
@@ -56,22 +57,22 @@ class CreateEventExtractor(Node):
 
     def process(self, task_context: TaskContext) -> TaskContext:
         """Process event extraction and normalization"""
+        context = self.get_context(task_context)
+
         try:
-            context = self.get_context(task_context)
             response_model, completion = self.create_completion(context)
+        except Exception as llm_error:
+            raise LLMServiceError(
+                ErrorMessages.llm_failed("extraction", str(llm_error))
+            ) from llm_error
 
-            # Store results
-            task_context.nodes[self.node_name] = {
-                "response_model": response_model,
-                "usage": completion.usage,
-                "status": "success",
-            }
+        # Store result
+        task_context.nodes[self.node_name] = {
+            "response_model": response_model,
+            "usage": completion.usage,
+        }
 
-            self._log_results(response_model)
-
-        except Exception as e:
-            logger.error("Extraction error: %s", str(e))
-            task_context.nodes[self.node_name] = {"status": "error", "error": str(e)}
+        self._log_results(response_model)
 
         return task_context
 
