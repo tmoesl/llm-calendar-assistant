@@ -52,3 +52,6 @@ token.json
 
 # ====== Intermediate test files ===========
 testrun.py
+
+# ====== Other files =======================
+.cursor/

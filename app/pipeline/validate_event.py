@@ -8,6 +8,7 @@ Validates security and legitimacy of calendar requests.
 from typing import Any
 
 from app.config.settings import get_settings
+from app.core.exceptions import ErrorMessages, LLMServiceError, ValidationError
 from app.core.node import Node
 from app.core.schema.task import TaskContext
 from app.pipeline.schema.validate import ValidateContext, ValidateResponse
@@ -50,29 +51,32 @@ class ValidateEvent(Node):
 
     def process(self, task_context: TaskContext) -> TaskContext:
         """Process combined validation"""
+        context = self.get_context(task_context)
+
         try:
-            context = self.get_context(task_context)
             response_model, completion = self.create_completion(context)
+        except Exception as llm_error:
+            raise LLMServiceError(
+                ErrorMessages.llm_failed("validation", str(llm_error))
+            ) from llm_error
 
-            # Check both validations
-            is_valid = (
-                response_model.is_safe
-                and response_model.is_valid
-                and response_model.confidence_score >= self.confidence_threshold
-            )
+        # Event validation logic
+        is_valid = (
+            response_model.is_safe
+            and response_model.is_valid
+            and response_model.confidence_score >= self.confidence_threshold
+        )
 
-            # Store results
-            task_context.nodes[self.node_name] = {
-                "response_model": response_model,
-                "usage": completion.usage,
-                "status": "success" if is_valid else "blocked",
-            }
+        if not is_valid:
+            raise ValidationError(ErrorMessages.validation_failed(response_model.reasoning))
 
-            self._log_validation_results(is_valid, response_model)
+        # Store result
+        task_context.nodes[self.node_name] = {
+            "response_model": response_model,
+            "usage": completion.usage,
+        }
 
-        except Exception as e:
-            logger.error("Validation error: %s", str(e))
-            task_context.nodes[self.node_name] = {"status": "error", "error": str(e)}
+        self._log_validation_results(is_valid, response_model)
 
         return task_context
 

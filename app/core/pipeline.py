@@ -8,7 +8,6 @@ with support for routing logic, logging, and error handling.
 
 from abc import ABC
 from contextlib import contextmanager
-from datetime import UTC, datetime
 from typing import ClassVar
 
 from app.api.schema import EventSchema
@@ -88,23 +87,13 @@ class Pipeline(ABC):
         task_context.metadata["nodes"] = self.nodes
         current_node_class: type[Node] | None = self.pipeline_schema.start
 
-        try:
-            while current_node_class:
-                node_config = self.nodes[current_node_class]
-                current_node = node_config.node()  # Instantiate the node
-                with self.node_context(current_node_class.__name__):
-                    task_context = current_node.process(task_context)
+        while current_node_class:
+            node_config = self.nodes[current_node_class]
+            current_node = node_config.node()  # Instantiate the node
+            with self.node_context(current_node_class.__name__):
+                task_context = current_node.process(task_context)
 
-                current_node_class = self._get_next_node_class(current_node_class, task_context)
-
-        except Exception as pipeline_error:
-            logger.error("Pipeline error: %s", str(pipeline_error))
-            task_context.error = {
-                "type": "pipeline_error",
-                "message": str(pipeline_error),
-                "node": current_node_class.__name__ if current_node_class else None,
-                "timestamp": datetime.now(UTC).isoformat(),
-            }
+            current_node_class = self._get_next_node_class(current_node_class, task_context)
 
         task_context.metadata.pop(
             "nodes", None
@@ -123,12 +112,6 @@ class Pipeline(ABC):
         Returns:
             The class of the next node to execute, or None if at the end
         """
-        # Check node status
-        node_name = current_node_class.__name__
-        node_status = task_context.nodes.get(node_name, {}).get("status", "")
-        if node_status in ["failed", "blocked", "error"]:
-            return None
-
         node_config = self.nodes.get(current_node_class)
         if not node_config or not node_config.connections:
             return None

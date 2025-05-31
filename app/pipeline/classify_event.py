@@ -8,6 +8,7 @@ Classifies the type of event requested.
 from typing import Any
 
 from app.config.settings import get_settings
+from app.core.exceptions import ErrorMessages, LLMServiceError, ValidationError
 from app.core.node import Node
 from app.core.schema.task import TaskContext
 from app.pipeline.schema.classify import ClassifyContext, ClassifyResponse
@@ -50,35 +51,38 @@ class ClassifyEvent(Node):
 
     def process(self, task_context: TaskContext) -> TaskContext:
         """Process intent classification"""
+        context = self.get_context(task_context)
+
         try:
-            context = self.get_context(task_context)
             response_model, completion = self.create_completion(context)
+        except Exception as llm_error:
+            raise LLMServiceError(
+                ErrorMessages.llm_failed("classification", str(llm_error))
+            ) from llm_error
 
-            # Core validation check
-            is_classified = (
-                response_model.has_intent
-                and response_model.request_type is not None
-                and response_model.confidence_score >= self.confidence_threshold
-            )
+        # Event classification logic
+        is_classified = (
+            response_model.has_intent
+            and response_model.request_type is not None
+            and response_model.confidence_score >= self.confidence_threshold
+        )
 
-            # Store results
-            task_context.nodes[self.node_name] = {
-                "response_model": response_model,
-                "usage": completion.usage,
-                "status": "blocked" if not is_classified else "success",
-                "details": {
-                    "has_intent": response_model.has_intent,
-                    "intent_type": response_model.request_type,
-                    "confidence": response_model.confidence_score,
-                    "reasoning": response_model.reasoning,
-                },
-            }
+        if not is_classified:
+            raise ValidationError(ErrorMessages.validation_failed(response_model.reasoning))
 
-            self._log_classification_results(is_classified, response_model)
+        # Store result
+        task_context.nodes[self.node_name] = {
+            "response_model": response_model,
+            "usage": completion.usage,
+            "details": {
+                "has_intent": response_model.has_intent,
+                "intent_type": response_model.request_type,
+                "confidence": response_model.confidence_score,
+                "reasoning": response_model.reasoning,
+            },
+        }
 
-        except Exception as e:
-            logger.error("Unexpected error in validation: %s", str(e))
-            task_context.nodes[self.node_name] = {"status": "error", "error": str(e)}
+        self._log_classification_results(is_classified, response_model)
 
         return task_context
 
