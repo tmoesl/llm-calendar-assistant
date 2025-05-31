@@ -40,14 +40,14 @@ class AnthropicSettings(LLMProviderSettings):
     """Settings for Anthropic."""
 
     api_key: str = Field(..., validation_alias="ANTHROPIC_API_KEY")
-    default_model: str = "claude-3-5-sonnet-20240620"
+    default_model: str = "claude-sonnet-4-20250514"
 
     @field_validator("api_key", mode="before")
     @classmethod
     def validate_api_key(cls, value: str) -> str:
         """Validate the Anthropic API key."""
-        if not value.startswith("cla-"):
-            raise ValueError("Anthropic API key must start with cla-")
+        if not value.startswith("sk-"):
+            raise ValueError("Anthropic API key must start with sk-")
         return value
 
 
