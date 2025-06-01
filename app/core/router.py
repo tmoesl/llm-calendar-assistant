@@ -52,9 +52,10 @@ class Router(Node):
             Updated TaskContext with routing decision recorded
         """
         next_node_class = self.route(task_context)
-        task_context.nodes[self.node_name] = {
-            "next_node": next_node_class.__name__ if next_node_class else None,
-        }
+        task_context.update_node(
+            self.node_name,
+            next_node=next_node_class.__name__ if next_node_class else None,
+        )
         return task_context
 
     def route(self, task_context: TaskContext) -> type[Node] | None:

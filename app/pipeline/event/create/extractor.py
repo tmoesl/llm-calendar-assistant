@@ -67,10 +67,11 @@ class CreateEventExtractor(Node):
             ) from llm_error
 
         # Store result
-        task_context.nodes[self.node_name] = {
-            "response_model": response_model,
-            "usage": completion.usage,
-        }
+        task_context.update_node(
+            self.node_name,
+            response_model=response_model,
+            usage=completion.usage,
+        )
 
         self._log_results(response_model)
 

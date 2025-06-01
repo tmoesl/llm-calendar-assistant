@@ -71,10 +71,11 @@ class ValidateEvent(Node):
             raise ValidationError(ErrorMessages.validation_failed(response_model.reasoning))
 
         # Store result
-        task_context.nodes[self.node_name] = {
-            "response_model": response_model,
-            "usage": completion.usage,
-        }
+        task_context.update_node(
+            self.node_name,
+            response_model=response_model,
+            usage=completion.usage,
+        )
 
         self._log_validation_results(is_valid, response_model)
 

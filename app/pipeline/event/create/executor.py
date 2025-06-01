@@ -56,9 +56,10 @@ class CreateEventExecutor(Node):
         created_event = GoogleEventResponse(**created_event_raw)
 
         # Store result
-        task_context.nodes[self.node_name] = {
-            "response_model": created_event,
-        }
+        task_context.update_node(
+            self.node_name,
+            response_model=created_event,
+        )
 
         logger.info("Created 1 event in calendar")
 
