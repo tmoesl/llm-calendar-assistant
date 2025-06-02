@@ -54,6 +54,6 @@ class Node(ABC):
         Note:
             Implementations should:
             1. Process the task according to their specific responsibility
-            2. Store results in task_context.nodes[self.node_name]
+            2. Store results using task_context.update_node(self.node_name, **results)
         """
         pass

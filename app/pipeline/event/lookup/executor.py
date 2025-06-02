@@ -82,9 +82,10 @@ class LookupEventExecutor(Node):
             )
 
         # Store result
-        task_context.nodes[self.node_name] = {
-            "response_model": found_events,
-        }
+        task_context.update_node(
+            self.node_name,
+            response_model=found_events,
+        )
 
         logger.info(
             "Found %d event%s in calendar",

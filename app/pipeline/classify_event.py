@@ -71,16 +71,11 @@ class ClassifyEvent(Node):
             raise ValidationError(ErrorMessages.validation_failed(response_model.reasoning))
 
         # Store result
-        task_context.nodes[self.node_name] = {
-            "response_model": response_model,
-            "usage": completion.usage,
-            "details": {
-                "has_intent": response_model.has_intent,
-                "intent_type": response_model.request_type,
-                "confidence": response_model.confidence_score,
-                "reasoning": response_model.reasoning,
-            },
-        }
+        task_context.update_node(
+            self.node_name,
+            response_model=response_model,
+            usage=completion.usage,
+        )
 
         self._log_classification_results(is_classified, response_model)
 

@@ -58,9 +58,10 @@ class DeleteEventExecutor(Node):
                 ) from api_error
 
         # Store result
-        task_context.nodes[self.node_name] = {
-            "response_model": deleted_events,
-        }
+        task_context.update_node(
+            self.node_name,
+            response_model=deleted_events,
+        )
 
         logger.info(
             "Deleted %d event%s from calendar",
