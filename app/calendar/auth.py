@@ -80,7 +80,9 @@ class GoogleAuthClient:
             raise ConnectionError("Failed to obtain valid Google credentials.")
 
         try:
-            self._service = build(api_name, api_version, credentials=self._credentials)
+            self._service = build(
+                api_name, api_version, credentials=self._credentials, cache_discovery=False
+            )
             return self._service
         except Exception as e:
             raise ConnectionError(f"Failed to build {api_name} service: {e}")

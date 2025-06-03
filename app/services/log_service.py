@@ -6,10 +6,38 @@ Handles configuration and setup of logging for the application.
 
 import logging
 import sys
+from contextvars import ContextVar
 from functools import lru_cache
 from pathlib import Path
 
 from pydantic_settings import BaseSettings
+
+# Context variable to store current request ID
+_request_id: ContextVar[str] = ContextVar("request_id", default="--------")
+
+# Context variable to store current service tag
+_service_tag: ContextVar[str] = ContextVar("service_tag", default="main")
+
+
+class TaskFormatter(logging.Formatter):
+    """Custom formatter that automatically includes Service Tag and Request ID from context"""
+
+    def format(self, record):
+        service_tag = _service_tag.get()
+        request_id = _request_id.get()
+        record.service_tag = f"[{service_tag}]"
+        record.task_id = f"[req:{request_id}]"
+        return super().format(record)
+
+
+def set_request_id(request_id: str):
+    """Set the current request ID (auto-shortened to 8 chars)"""
+    _request_id.set(str(request_id)[:8])
+
+
+def set_service_tag(service: str):
+    """Set the current service tag (api, celery, main, etc.)"""
+    _service_tag.set(service)
 
 
 class LogConfig(BaseSettings):
@@ -19,7 +47,7 @@ class LogConfig(BaseSettings):
 
     name: str = "calendar_assistant"
     level: str = "DEBUG"
-    format: str = "%(asctime)s - %(levelname)s - %(name)s - %(message)s"
+    format: str = "%(asctime)s | %(levelname)s | %(service_tag)s %(task_id)s %(message)s"
     date_format: str = "%Y-%m-%d %H:%M:%S"
     file_path: str = "logs/calendar_assistant.log"
     console_output: bool = True
@@ -52,8 +80,8 @@ def setup_logging() -> None:
     # Set up logging configuration
     logger.setLevel(getattr(logging, config.level))
 
-    # Create formatters
-    formatter = logging.Formatter(
+    # Create custom formatter with task ID support
+    formatter = TaskFormatter(
         config.format,
         datefmt=config.date_format,
     )
