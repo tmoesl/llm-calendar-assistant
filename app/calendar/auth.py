@@ -11,7 +11,7 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import Resource, build
 
-from app.services.log_service import logger
+from app.services.logger_factory import logger
 
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
 
@@ -80,7 +80,9 @@ class GoogleAuthClient:
             raise ConnectionError("Failed to obtain valid Google credentials.")
 
         try:
-            self._service = build(api_name, api_version, credentials=self._credentials)
+            self._service = build(
+                api_name, api_version, credentials=self._credentials, cache_discovery=False
+            )
             return self._service
         except Exception as e:
             raise ConnectionError(f"Failed to build {api_name} service: {e}")

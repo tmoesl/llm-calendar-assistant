@@ -13,7 +13,7 @@ from app.core.node import Node
 from app.core.schema.task import TaskContext
 from app.pipeline.schema.classify import ClassifyContext, ClassifyResponse
 from app.services.llm_factory import LLMFactory
-from app.services.log_service import logger
+from app.services.logger_factory import logger
 from app.services.prompt_loader import PromptManager
 
 

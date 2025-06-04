@@ -11,7 +11,7 @@ from app.calendar.service import GoogleCalendarService
 from app.core.exceptions import CalServiceError, ErrorMessages, ValidationError
 from app.core.node import Node
 from app.core.schema.task import TaskContext
-from app.services.log_service import logger
+from app.services.logger_factory import logger
 
 
 class DeleteEventExecutor(Node):

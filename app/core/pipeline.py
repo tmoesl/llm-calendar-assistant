@@ -15,7 +15,8 @@ from app.core.node import Node
 from app.core.router import Router
 from app.core.schema.pipeline import NodeConfig, PipelineSchema
 from app.core.schema.task import TaskContext
-from app.services.log_service import logger
+from app.services.logger_config import PIPELINE, WORKER
+from app.services.logger_factory import logger, set_service_tag
 
 
 class Pipeline(ABC):
@@ -83,6 +84,10 @@ class Pipeline(ABC):
         Raises:
             Exception: Any exception that occurs during pipeline execution
         """
+        # Switch context for pipeline execution
+        set_service_tag(PIPELINE)
+        logger.info("Starting pipeline execution")
+
         task_context = TaskContext(event=event)
         task_context.metadata["nodes"] = self.nodes
         current_node_class: type[Node] | None = self.pipeline_schema.start
@@ -98,6 +103,12 @@ class Pipeline(ABC):
         task_context.metadata.pop(
             "nodes", None
         )  # Remove nodes from metadata to avoid circular references, serialization issues and security risks
+
+        logger.info("Completed pipeline execution")
+
+        # Switch context for worker execution
+        set_service_tag(WORKER)
+
         return task_context
 
     def _get_next_node_class(
