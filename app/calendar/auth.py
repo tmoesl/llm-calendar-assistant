@@ -11,7 +11,7 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import Resource, build
 
-from app.services.log_service import logger
+from app.services.logger_factory import logger
 
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
 

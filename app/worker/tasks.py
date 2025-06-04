@@ -5,7 +5,7 @@ from app.database.event import Event
 from app.database.repository import GenericRepository
 from app.database.session import get_db_session
 from app.pipeline.pipeline import CalendarPipeline
-from app.services.log_service import logger
+from app.services.logger_factory import logger, set_request_id
 from app.worker.celery_app import celery_app
 
 """
@@ -18,7 +18,7 @@ pipeline execution and result storage.
 
 
 @celery_app.task(name="process_incoming_event")
-def process_incoming_event(event_id: str):
+def process_incoming_event(event_id: str, correlation_id: str | None = None):
     """Processes an incoming event through its designated pipeline.
 
     This Celery task handles the asynchronous processing of events by:
@@ -29,8 +29,13 @@ def process_incoming_event(event_id: str):
 
     Args:
         event_id: Unique identifier of the event to process
+        correlation_id: Correlation ID for request tracing
     """
     with contextmanager(get_db_session)() as session:
+        # Set context from passed correlation_id
+        if correlation_id:
+            set_request_id(correlation_id)
+
         # Initialize repository for database operations
         repository = GenericRepository(session=session, model=Event)
 

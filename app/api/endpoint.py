@@ -1,7 +1,7 @@
 import json
 from http import HTTPStatus
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 from starlette.responses import Response
 
@@ -9,7 +9,7 @@ from app.api.schema import EventSchema
 from app.database.event import Event
 from app.database.repository import GenericRepository
 from app.database.session import get_db_session
-from app.services.log_service import logger
+from app.services.logger_factory import logger
 from app.worker.celery_app import celery_app
 
 """
@@ -37,6 +37,7 @@ router = APIRouter()
 @router.post("/", dependencies=[])
 def handle_event(
     data: EventSchema,
+    request: Request,
     session: Session = Depends(get_db_session),  # noqa: B008
 ) -> Response:
     """Handles incoming event submissions.
@@ -47,6 +48,7 @@ def handle_event(
 
     Args:
         data: The event data, validated against EventSchema
+        request: The FastAPI request object containing correlation_id
         session: Database session injected by FastAPI dependency
 
     Returns:
@@ -68,10 +70,11 @@ def handle_event(
     repository.create(obj=event)
     logger.info("Event stored in database")
 
-    # Queue processing task
+    # Queue processing task with correlation_id
     task_id = celery_app.send_task(
         "process_incoming_event",
         args=[str(event.id)],  # Converts UUID to string
+        kwargs={"correlation_id": request.state.correlation_id},
     )
     logger.info(f"Queued event processing: {task_id}")
 

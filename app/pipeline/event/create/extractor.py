@@ -13,7 +13,7 @@ from app.core.node import Node
 from app.core.schema.task import TaskContext
 from app.pipeline.schema.create import CreateContext, CreateResponse
 from app.services.llm_factory import LLMFactory
-from app.services.log_service import logger
+from app.services.logger_factory import logger
 from app.services.prompt_loader import PromptManager
 from app.utils.datetime_utils import get_datetime_reference
 

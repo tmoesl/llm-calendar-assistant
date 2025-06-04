@@ -1,3 +1,9 @@
+"""
+Celery Application Module
+
+This module sets up the Celery application instance and configures it for use in the application.
+"""
+
 import os
 
 from celery import Celery

@@ -10,7 +10,7 @@ import pytz
 from tzlocal import get_localzone_name
 
 from app.core.schema.event import EventDateTime
-from app.services.log_service import logger
+from app.services.logger_factory import logger
 
 
 def get_datetime_reference() -> EventDateTime:
