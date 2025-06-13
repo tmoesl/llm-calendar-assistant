@@ -7,6 +7,7 @@ Provides the main logging interface for the application.
 
 import logging
 import sys
+import time
 from contextvars import ContextVar
 from pathlib import Path
 
@@ -98,5 +99,9 @@ def setup_service_logger(service_name: str, config: LogConfig | None = None) -> 
 # Loaded when the module is imported
 # Configured when setup_service_logger() is called
 
+# Set the time zone to UTC for all log entries
+logging.Formatter.converter = time.gmtime
+
+# Initialize the logger
 config = get_log_config()
 logger = logging.getLogger(config.name)
