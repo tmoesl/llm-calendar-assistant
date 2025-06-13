@@ -11,7 +11,7 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 
 from alembic import context
-from app.database.database_utils import DatabaseUtils
+from app.database.config import DbConfig
 from app.database.event import *  # noqa: F403 # Import models to ensure they are registered
 from app.database.session import Base
 
@@ -36,7 +36,7 @@ target_metadata = Base.metadata
 
 def get_url():
     """Get database URL from environment variables."""
-    return DatabaseUtils.get_connection_string()
+    return DbConfig().url
 
 
 def run_migrations_offline() -> None:
