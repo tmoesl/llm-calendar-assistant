@@ -5,40 +5,26 @@ Provides reference datetime information for LLM function calls.
 """
 
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
-import pytz
-from tzlocal import get_localzone_name
-
+from app.config.settings import get_settings
 from app.core.schema.event import EventDateTime
-from app.services.logger_factory import logger
 
 
 def get_datetime_reference() -> EventDateTime:
     """
     Get current datetime as reference point for LLM.
-    Uses system timezone with UTC fallback.
+    Utilizes the configured user timezone for accurate event scheduling.
 
     Returns:
-        EventDateTime: Current datetime in system timezone or UTC fallback
+        EventDateTime: Current datetime in user timezone
                       with properly formatted dateTime and timeZone fields
     """
-    try:
-        # Get system timezone
-        system_tz = get_localzone_name()
-        tz = pytz.timezone(system_tz)
+    settings = get_settings()
+    user_tz = settings.app.user_timezone
+    tz = ZoneInfo(user_tz)
 
-        # Get current time in that timezone
-        current = datetime.now(tz)
+    current = datetime.now(tz)
+    current_iso = current.replace(microsecond=0).isoformat()
 
-        # Format for LLM reference (remove microseconds for cleaner output)
-        current_iso = current.replace(microsecond=0).isoformat()
-
-        return EventDateTime(dateTime=current_iso, timeZone=system_tz)
-
-    except Exception as e:
-        logger.warning("System timezone detection failed: %s. Using UTC.", str(e))
-        current_utc = datetime.now(pytz.UTC)
-
-        return EventDateTime(
-            dateTime=current_utc.replace(microsecond=0).isoformat(), timeZone="UTC"
-        )
+    return EventDateTime(dateTime=current_iso, timeZone=user_tz)
