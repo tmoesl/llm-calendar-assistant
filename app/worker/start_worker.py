@@ -6,7 +6,7 @@ Use this as the entry point for celery workers.
 """
 
 from app.services.logger_config import WORKER
-from app.services.logger_factory import setup_service_logger
+from app.services.logger_factory import logger, setup_service_logger
 from app.worker.celery_app import celery_app
 
 # Setup logging for Celery worker (pure configuration)
@@ -14,3 +14,5 @@ setup_service_logger(WORKER)
 
 # Celery celery application instance
 app = celery_app
+
+logger.info("Celery worker initialized")

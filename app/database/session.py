@@ -13,15 +13,13 @@ from sqlalchemy import create_engine
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
-from app.database.database_utils import DatabaseUtils
+from app.database.config import DbConfig
 
-# Create the SQLAlchemy engine
-engine = create_engine(
-    DatabaseUtils.get_connection_string(),
-    echo=False,  # Set to True for SQL query logging in development
-    pool_pre_ping=True,  # Verify connections before use
-    pool_recycle=3600,  # Recycle connections every hour
-)
+# Load database configuration
+config = DbConfig()
+
+# Create the SQLAlchemy engine with streamlined config
+engine = create_engine(url=config.url, **config.engine_options)
 
 # Create session factory
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

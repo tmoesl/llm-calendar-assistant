@@ -23,7 +23,7 @@ class LookupEventExtractor(Node):
 
     def __init__(self):
         """Initialize extractor"""
-        self.llm = LLMFactory("openai")
+        self.llm_provider = LLMFactory("openai")
         logger.info("Initialized %s", self.node_name)
 
     def get_context(self, task_context: TaskContext) -> LookupContext:
@@ -44,7 +44,7 @@ class LookupEventExtractor(Node):
             timezone=context.datetime_ref.timeZone,
             is_bulk_operation=context.is_bulk_operation,
         )
-        response_model, completion = self.llm.create_completion(
+        response_model, completion = self.llm_provider.create_completion(
             response_model=LookupResponse,
             messages=[
                 {

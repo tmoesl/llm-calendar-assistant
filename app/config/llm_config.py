@@ -11,11 +11,6 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class LLMProviderSettings(BaseSettings):
     """Base settings for LLM providers."""
 
-    temperature: float = Field(default=0.0, description="Randomness for generation.")
-    max_tokens: int = Field(default=2048, description="Max tokens per completion.")
-    max_retries: int = Field(default=3, description="Retries on API failure.")
-    timeout: int = Field(default=30, description="API request timeout (seconds).")
-
     # Configure .env loading for all subclasses
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
@@ -24,8 +19,12 @@ class OpenAISettings(LLMProviderSettings):
     """Settings for OpenAI."""
 
     api_key: str = Field(..., validation_alias="OPENAI_API_KEY")
-    default_model: str = "gpt-4o"
-    embedding_model: str = "text-embedding-3-small"
+    default_model: str = Field(default="gpt-4o", alias="OPENAI_MODEL")
+    embedding_model: str = Field(default="text-embedding-3-small", alias="OPENAI_EMBEDDING_MODEL")
+    temperature: float = Field(default=0.0, alias="OPENAI_TEMPERATURE")
+    max_tokens: int = Field(default=2048, alias="OPENAI_MAX_TOKENS")
+    max_retries: int = Field(default=3, alias="OPENAI_MAX_RETRIES")
+    timeout: int = Field(default=30, alias="OPENAI_TIMEOUT")
 
     @field_validator("api_key", mode="before")
     @classmethod
@@ -40,7 +39,11 @@ class AnthropicSettings(LLMProviderSettings):
     """Settings for Anthropic."""
 
     api_key: str = Field(..., validation_alias="ANTHROPIC_API_KEY")
-    default_model: str = "claude-sonnet-4-20250514"
+    default_model: str = Field(default="claude-sonnet-4-20250514", alias="ANTHROPIC_MODEL")
+    temperature: float = Field(default=0.0, alias="ANTHROPIC_TEMPERATURE")
+    max_tokens: int = Field(default=2048, alias="ANTHROPIC_MAX_TOKENS")
+    max_retries: int = Field(default=3, alias="ANTHROPIC_MAX_RETRIES")
+    timeout: int = Field(default=30, alias="ANTHROPIC_TIMEOUT")
 
     @field_validator("api_key", mode="before")
     @classmethod
@@ -57,3 +60,11 @@ class LLMConfig(BaseSettings):
     # Note: Use default_factory to defer instantiation until LLMConfig is created
     openai: OpenAISettings = Field(default_factory=OpenAISettings)
     anthropic: AnthropicSettings = Field(default_factory=AnthropicSettings)
+
+    # LLM output processing settings
+    confidence_threshold: float = Field(
+        default=0.7,
+        alias="LLM_CONFIDENCE_THRESHOLD",
+    )
+
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")

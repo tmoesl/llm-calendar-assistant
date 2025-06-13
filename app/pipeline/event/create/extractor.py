@@ -22,8 +22,8 @@ class CreateEventExtractor(Node):
     """Extracts and normalizes details for event creation"""
 
     def __init__(self):
-        """Initialize extractor with configuration"""
-        self.llm = LLMFactory("openai")
+        """Initialize extractor"""
+        self.llm_provider = LLMFactory("openai")
         logger.info("Initialized %s", self.node_name)
 
     def get_context(self, task_context: TaskContext) -> CreateContext:
@@ -39,7 +39,7 @@ class CreateEventExtractor(Node):
             datetime=context.datetime_ref.dateTime,
             timezone=context.datetime_ref.timeZone,
         )
-        response_model, completion = self.llm.create_completion(
+        response_model, completion = self.llm_provider.create_completion(
             response_model=CreateResponse,
             messages=[
                 {
