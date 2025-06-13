@@ -21,10 +21,10 @@ class ClassifyEvent(Node):
     """Classifies the type of calendar event requested"""
 
     def __init__(self):
-        """Initialize classifier with configuration"""
+        """Initialize classifier"""
         settings = get_settings()
-        self.confidence_threshold = settings.app.confidence_threshold
-        self.llm = LLMFactory("openai")
+        self.confidence_threshold = settings.llm.confidence_threshold
+        self.llm_provider = LLMFactory("openai")
         logger.info("Initialized %s", self.node_name)
 
     def get_context(self, task_context: TaskContext) -> ClassifyContext:
@@ -34,7 +34,7 @@ class ClassifyEvent(Node):
     def create_completion(self, context: ClassifyContext) -> tuple[ClassifyResponse, Any]:
         """Get validation results from LLM"""
         prompt = PromptManager.get_prompt("classify_event_request")
-        response_model, completion = self.llm.create_completion(
+        response_model, completion = self.llm_provider.create_completion(
             response_model=ClassifyResponse,
             messages=[
                 {

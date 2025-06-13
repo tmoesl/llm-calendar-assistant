@@ -21,10 +21,10 @@ class ValidateEvent(Node):
     """Validates the event request for legitimacy and safety."""
 
     def __init__(self):
-        """Initialize validator with configuration"""
+        """Initialize validator"""
         settings = get_settings()
-        self.confidence_threshold = settings.app.confidence_threshold
-        self.llm = LLMFactory("openai")
+        self.confidence_threshold = settings.llm.confidence_threshold
+        self.llm_provider = LLMFactory("openai")
         logger.info("Initialized %s", self.node_name)
 
     def get_context(self, task_context: TaskContext) -> ValidateContext:
@@ -34,7 +34,7 @@ class ValidateEvent(Node):
     def create_completion(self, context: ValidateContext) -> tuple[ValidateResponse, Any]:
         """Get validation results from LLM"""
         prompt = PromptManager.get_prompt("validate_event_request")
-        response_model, completion = self.llm.create_completion(
+        response_model, completion = self.llm_provider.create_completion(
             response_model=ValidateResponse,
             messages=[
                 {
