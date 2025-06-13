@@ -1,0 +1,97 @@
+# Git and version control
+.git
+.gitignore
+.gitattributes
+
+# Python cache and virtual environments
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+.venv
+venv/
+env/
+ENV/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+.cursor/
+
+# Documentation and README files
+*.md
+docs/
+README*
+
+# Test files and coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.cache/
+
+# Logs and runtime files
+*.log
+logs/
+*.pid
+
+# Environment files (should be mounted as volumes)
+.env
+.env.*
+env.sample
+
+# Docker files (not needed in container)
+docker/
+!docker/start_api.sh
+!docker/start_celery.sh
+!docker/start_flower.sh
+Dockerfile*
+docker-compose*.yml
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# OS generated files
+Thumbs.db
+.DS_Store
+
+# Jupyter notebooks
+.ipynb_checkpoints/
+
+# MyPy cache
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Ruff cache
+.ruff_cache/
+
+# Credentials and secrets
+credentials.json
+token.json
+*.key
+*.pem
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Backup files
+*.bak
+*.backup
+
+# Test run files
+testrun.py 

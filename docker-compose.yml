@@ -1,0 +1,89 @@
+services:
+  # Redis Message Broker
+  redis:
+    image: redis:latest
+    container_name: ${PROJECT_NAME}_redis
+    command: redis-server --appendonly yes --appendfsync everysec
+    ports:
+      - "${REDIS_PORT}:6379"  # [HOST_PORT]:[CONTAINER_PORT] - Redis standard port
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+   
+  # FastAPI Application
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    container_name: ${PROJECT_NAME}_api
+    env_file:
+      - .env
+      - .env.docker
+    ports:
+      - "${API_PORT}:8080"    # [HOST_PORT]:[CONTAINER_PORT] - FastAPI server
+    volumes:
+      - ./logs:/app/logs
+    depends_on:
+      redis:
+        condition: service_healthy
+      celery:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Celery Worker
+  celery:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.celery
+    env_file:
+      - .env
+      - .env.docker
+    volumes:
+      - ./logs:/app/logs
+      # Credentials: read-only (never change) | Tokens: writable (refresh needed)
+      - ./credentials.json:/app/credentials.json:ro  
+      - ./token.json:/app/token.json
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    deploy:
+      replicas: 2
+
+  # Celery Flower (Optional monitoring)
+  flower:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.flower
+    container_name: ${PROJECT_NAME}_flower
+    env_file:
+      - .env
+      - .env.docker
+    ports:
+      - "${FLOWER_PORT}:5555"  # [HOST_PORT]:[CONTAINER_PORT] - Flower dashboard
+    volumes:
+      - ./logs:/app/logs
+    depends_on:
+      redis:
+        condition: service_healthy
+      celery:
+        condition: service_healthy
+    restart: unless-stopped
+    profiles:
+      - monitoring
+
+# Named volumes for data persistence
+volumes:
+  redis_data:
+    driver: local
+
+# Project-scoped network for service communication
+networks:
+  default:
+    driver: bridge
+    name: "${PROJECT_NAME}_network"

@@ -1,58 +1,19 @@
 """
 Celery Application Module
 
-This module sets up the Celery application instance and configures it for use in the application.
+This module sets up the Celery application instance using the worker configuration.
 """
 
-import os
-
 from celery import Celery
-from dotenv import load_dotenv
 
-load_dotenv()
+from app.worker.config import WorkerConfig
 
+# Load worker configuration
+config = WorkerConfig()
 
-def get_redis_url():
-    """
-    Get the Redis URL for Celery configuration.
-
-    Returns:
-        str: The Redis URL.
-    """
-    if os.getenv("DEV_MODE") == "true":
-        # Local development: use localhost
-        redis_host = os.getenv("REDIS_HOST", "localhost")
-    else:
-        # Docker Compose or production: use service name
-        redis_host = f"{os.getenv('PROJECT_NAME')}_redis"
-
-    redis_port = os.getenv("REDIS_PORT", "6379")
-    redis_db = os.getenv("REDIS_DB", "0")
-
-    return f"redis://{redis_host}:{redis_port}/{redis_db}"
-
-
-def get_celery_config():
-    """
-    Get the Celery configuration.
-
-    Returns:
-        dict: The Celery configuration.
-    """
-    redis_url = get_redis_url()
-    return {
-        "broker_url": redis_url,
-        "result_backend": redis_url,
-        "task_serializer": "json",
-        "accept_content": ["json"],
-        "result_serializer": "json",
-        "enable_utc": True,
-        "broker_connection_retry_on_startup": True,
-    }
-
-
+# Create Celery application instance
 celery_app = Celery("tasks")
-celery_app.config_from_object(get_celery_config())
+celery_app.config_from_object(config.celery_settings)
 
 # Automatically discover and register tasks
 celery_app.autodiscover_tasks(["app.worker"], force=True)

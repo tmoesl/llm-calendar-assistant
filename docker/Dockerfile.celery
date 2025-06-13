@@ -1,0 +1,73 @@
+# === Builder Stage ===
+FROM python:3.12-slim AS builder
+
+# Environment config
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libpq-dev \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Install UV package manager
+RUN pip install uv
+
+# Copy dependency files
+COPY pyproject.toml uv.lock ./
+
+# Install dependencies using lockfile
+RUN uv pip install --system -r pyproject.toml
+
+# === Production Stage ===
+FROM python:3.12-slim AS production
+
+# Environment config
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV PATH="/usr/local/bin:$PATH"
+ENV C_FORCE_ROOT=1
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y \
+    libpq5 \
+    procps \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN groupadd -r celeryuser && useradd -r -g celeryuser celeryuser
+
+# Set working directory
+WORKDIR /app
+
+# Copy installed Python packages and tools from builder
+COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+
+# Copy less frequently changing files first (better caching)
+COPY docker/start_celery.sh ./
+
+# Copy frequently changing code last  
+COPY app/ ./app/
+
+# Make script executable
+RUN chmod +x start_celery.sh
+
+# Set permissions
+RUN chown -R celeryuser:celeryuser /app
+
+# Switch to non-root user
+USER celeryuser
+
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD celery -A app.worker.start_worker:app inspect ping -d celery@$HOSTNAME || exit 1
+
+# Entry point
+CMD ["./start_celery.sh"] 

@@ -5,7 +5,7 @@ Application-specific configuration using Pydantic Settings.
 """
 
 from pydantic import Field
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class AppConfig(BaseSettings):
@@ -13,9 +13,11 @@ class AppConfig(BaseSettings):
 
     confidence_threshold: float = Field(
         default=0.7,
-        description="Minimum confidence level for validation.",
+        alias="APP_CONFIDENCE_THRESHOLD",
     )
     default_calendar_id: str = Field(
         default="primary",
-        description="Default calendar ID to use for operations.",
+        alias="APP_DEFAULT_CALENDAR_ID",
     )
+
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
