@@ -16,7 +16,6 @@ from app.config.llm_config import LLMConfig
 class Settings(BaseSettings):
     """Main settings for the application."""
 
-    app_name: str = "GenAI Calendar Assistant"
     llm: LLMConfig = Field(default_factory=LLMConfig)
     app: AppConfig = Field(default_factory=AppConfig)
 

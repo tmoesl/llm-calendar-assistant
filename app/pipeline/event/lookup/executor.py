@@ -10,6 +10,7 @@ from app.calendar.schema import (
     lookup_event_model_to_request,
 )
 from app.calendar.service import GoogleCalendarService
+from app.config.settings import get_settings
 from app.core.exceptions import CalServiceError, ErrorMessages, ValidationError
 from app.core.node import Node
 from app.core.schema.task import TaskContext
@@ -21,7 +22,9 @@ class LookupEventExecutor(Node):
 
     def __init__(self):
         """Initialize with Google Calendar client."""
+        settings = get_settings()
         self.client = GoogleAuthClient()
+        self.calendar_id = settings.app.calendar_id
         logger.info("Initialized %s", self.node_name)
 
     def process(self, task_context: TaskContext) -> TaskContext:
@@ -47,7 +50,7 @@ class LookupEventExecutor(Node):
             if search_params.event_id:
                 # Direct event ID lookup using events.get
                 event_raw = calendar_service.get_event(
-                    calendar_id="primary", event_id=search_params.event_id
+                    calendar_id=self.calendar_id, event_id=search_params.event_id
                 )
                 events_raw = [event_raw] if event_raw else []
             else:
@@ -61,7 +64,7 @@ class LookupEventExecutor(Node):
 
                 lookup_request = lookup_event_model_to_request(model=search_params)
                 events_raw = calendar_service.list_events(
-                    calendar_id="primary",
+                    calendar_id=self.calendar_id,
                     **lookup_request.model_dump(exclude_none=True),
                 )
         except Exception as api_error:

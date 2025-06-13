@@ -35,7 +35,7 @@ class GoogleCalendarService:
         Create a calendar event.
 
         Args:
-            calendar_id: Target calendar ID (e.g., 'primary')
+            calendar_id: Target calendar ID
             event_body: Event resource dict (from GoogleCreateEventRequest.model_dump())
 
         Returns:
@@ -75,7 +75,7 @@ class GoogleCalendarService:
         Delete a calendar event.
 
         Args:
-            calendar_id: Calendar containing the event (path parameter)
+            calendar_id: Calendar ID containing the event
             event: Event object with id, summary, htmlLink properties
             **query_params: Optional query parameters (sendUpdates, etc.)
 
@@ -112,14 +112,14 @@ class GoogleCalendarService:
 
     def list_events(
         self,
-        calendar_id: str = "primary",
+        calendar_id: str | None = None,
         **query_params: Any,
     ) -> list[dict]:
         """
         List events from a calendar.
 
         Args:
-            calendar_id: Target calendar ID (path parameter)
+            calendar_id: Target calendar ID
             **query_params: Query parameters (from GoogleLookupEventRequest.model_dump())
 
         Returns:
@@ -163,8 +163,8 @@ class GoogleCalendarService:
         Get a specific calendar event by ID.
 
         Args:
-            calendar_id: Calendar containing the event (path parameter)
-            event_id: Event ID to retrieve (path parameter)
+            calendar_id: Calendar ID containing the event
+            event_id: Event ID to retrieve
 
         Returns:
             Event resource dictionary

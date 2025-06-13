@@ -8,6 +8,7 @@ Handles the deletion of calendar events using the Google Calendar API.
 from app.calendar.auth import GoogleAuthClient
 from app.calendar.schema import GoogleLookupEventResponse
 from app.calendar.service import GoogleCalendarService
+from app.config.settings import get_settings
 from app.core.exceptions import CalServiceError, ErrorMessages, ValidationError
 from app.core.node import Node
 from app.core.schema.task import TaskContext
@@ -19,7 +20,9 @@ class DeleteEventExecutor(Node):
 
     def __init__(self):
         """Initialize with Google Calendar client."""
+        settings = get_settings()
         self.client = GoogleAuthClient()
+        self.calendar_id = settings.app.calendar_id
         logger.info("Initialized %s", self.node_name)
 
     def process(self, task_context: TaskContext) -> TaskContext:
@@ -47,7 +50,7 @@ class DeleteEventExecutor(Node):
             try:
                 # Delete the event
                 calendar_service.delete_event(
-                    calendar_id="primary",
+                    calendar_id=self.calendar_id,
                     event=event,
                     sendUpdates="none",  # Default to no notifications
                 )

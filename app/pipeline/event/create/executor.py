@@ -8,6 +8,7 @@ Handles the creation of calendar events using the Google Calendar API.
 from app.calendar.auth import GoogleAuthClient
 from app.calendar.schema import GoogleEventResponse, create_event_model_to_request
 from app.calendar.service import GoogleCalendarService
+from app.config.settings import get_settings
 from app.core.exceptions import CalServiceError, ErrorMessages, ValidationError
 from app.core.node import Node
 from app.core.schema.task import TaskContext
@@ -19,7 +20,9 @@ class CreateEventExecutor(Node):
 
     def __init__(self):
         """Initialize with Google Calendar client."""
+        settings = get_settings()
         self.client = GoogleAuthClient()
+        self.calendar_id = settings.app.calendar_id
         logger.info("Initialized %s", self.node_name)
 
     def process(self, task_context: TaskContext) -> TaskContext:
@@ -44,7 +47,7 @@ class CreateEventExecutor(Node):
         try:
             # Create the event
             created_event_raw = calendar_service.create_event(
-                calendar_id="primary",
+                calendar_id=self.calendar_id,
                 event_body=create_request.model_dump(exclude_none=True),
             )
         except Exception as api_error:
