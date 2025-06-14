@@ -14,7 +14,7 @@ from anthropic import Anthropic
 from openai import OpenAI
 from pydantic import BaseModel
 
-from app.config.settings import get_settings
+from app.llm.config import get_llm_config
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -113,8 +113,8 @@ class LLMFactory:
             raise ValueError(f"Unsupported LLM provider: {provider}")
 
         self.provider = provider
-        settings = get_settings()
-        self.settings = getattr(settings.llm, provider)
+        config = get_llm_config()
+        self.settings = getattr(config, provider)
         self.llm_provider = self._create_provider_instance()
 
     def _create_provider_instance(self) -> LLMProvider:
@@ -160,7 +160,7 @@ class LLMFactory:
 # comnpletion = client.beta.chat.completions.parse(model, messages, response_format)
 # completion.choices[0].message.parse
 # • Retries only at API transport level.
-# • If the structured output doesn’t match the schema → fails immediately.
+# • If the structured output doesn't match the schema → fails immediately.
 
 # Instructor - OpenAI
 # client = instructor.from_openai(OpenAI(api_key=api_key))

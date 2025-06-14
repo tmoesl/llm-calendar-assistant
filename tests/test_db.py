@@ -13,7 +13,7 @@ from typing import Any, cast
 import pytest
 from sqlalchemy.orm import Session
 
-from app.database.config import DbConfig
+from app.database.config import get_db_config
 from app.database.event import Event  # Assuming your Event model is here
 from app.database.repository import GenericRepository
 from app.database.session import SessionLocal
@@ -30,7 +30,8 @@ def create_test_tables() -> Generator[None, Any, None]:
     prior to executing the test suite to set up the database schema.
     """
     # Check if the connection string can be retrieved, as a basic sanity check
-    assert DbConfig().url is not None
+    config = get_db_config()
+    assert config.url is not None
     # No explicit table creation or dropping is done by this fixture.
     # The database schema is expected to be managed by Alembic migrations.
     yield

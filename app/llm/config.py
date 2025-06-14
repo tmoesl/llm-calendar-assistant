@@ -4,6 +4,8 @@ LLM Configuration Module
 Configuration for LLM providers using Pydantic Settings and Field validation.
 """
 
+from functools import lru_cache
+
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -57,9 +59,10 @@ class AnthropicSettings(LLMProviderSettings):
 class LLMConfig(BaseSettings):
     """Configuration for all LLM providers."""
 
-    # Note: Use default_factory to defer instantiation until LLMConfig is created
-    openai: OpenAISettings = Field(default_factory=OpenAISettings)
-    anthropic: AnthropicSettings = Field(default_factory=AnthropicSettings)
+    # Use lambda functions to create proper zero-argument callables for default_factory
+    # This satisfies the type checker while allowing Pydantic to auto-load from environment
+    openai: OpenAISettings = Field(default_factory=lambda: OpenAISettings())  # type: ignore
+    anthropic: AnthropicSettings = Field(default_factory=lambda: AnthropicSettings())  # type: ignore
 
     # LLM output processing settings
     confidence_threshold: float = Field(
@@ -68,3 +71,9 @@ class LLMConfig(BaseSettings):
     )
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
+
+@lru_cache
+def get_llm_config() -> LLMConfig:
+    """Get LLM configuration instance (singleton)."""
+    return LLMConfig()

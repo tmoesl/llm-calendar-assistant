@@ -6,10 +6,10 @@ This module sets up the Celery application instance using the worker configurati
 
 from celery import Celery
 
-from app.worker.config import WorkerConfig
+from app.worker.config import get_worker_config
 
 # Load worker configuration
-config = WorkerConfig()
+config = get_worker_config()
 
 # Create Celery application instance
 celery_app = Celery("tasks")

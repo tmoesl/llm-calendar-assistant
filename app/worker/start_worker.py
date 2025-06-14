@@ -5,8 +5,8 @@ This script sets up logging for Celery workers and imports the celery app.
 Use this as the entry point for celery workers.
 """
 
-from app.services.logger_config import WORKER
-from app.services.logger_factory import logger, setup_service_logger
+from app.logging.config import WORKER
+from app.logging.factory import logger, setup_service_logger
 from app.worker.celery_app import celery_app
 
 # Setup logging for Celery worker (pure configuration)

@@ -10,7 +10,7 @@ import uuid
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from app.services.logger_factory import set_request_id
+from app.logging.factory import set_request_id
 
 
 class RequestContextMiddleware(BaseHTTPMiddleware):

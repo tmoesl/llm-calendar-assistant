@@ -13,10 +13,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
-from app.database.config import DbConfig
+from app.database.config import get_db_config
 
 # Load database configuration
-config = DbConfig()
+config = get_db_config()
 
 # Create the SQLAlchemy engine with streamlined config
 engine = create_engine(url=config.url, **config.engine_options)

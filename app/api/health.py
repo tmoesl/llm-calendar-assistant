@@ -44,10 +44,10 @@ def get_redis_client():
         raise ImportError("Redis library not available")
 
     try:
-        from app.worker.config import WorkerConfig
+        from app.worker.config import get_worker_config
 
-        worker_config = WorkerConfig()
-        return Redis.from_url(worker_config.redis_url, decode_responses=True)
+        config = get_worker_config()
+        return Redis.from_url(config.redis_url, decode_responses=True)
     except Exception as e:
         raise ConnectionError(f"Failed to create Redis client: {str(e)}")
 

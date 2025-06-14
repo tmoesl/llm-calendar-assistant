@@ -11,7 +11,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import Resource, build
 
 from app.calendar.config import CalendarConfig, get_calendar_config
-from app.services.logger_factory import logger
+from app.logging.factory import logger
 
 
 class AuthenticationError(Exception):

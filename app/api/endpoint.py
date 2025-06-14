@@ -9,7 +9,7 @@ from app.api.schema import EventSchema
 from app.database.event import Event
 from app.database.repository import GenericRepository
 from app.database.session import get_db_session
-from app.services.logger_factory import logger
+from app.logging.factory import logger
 from app.worker.celery_app import celery_app
 
 """
