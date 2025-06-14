@@ -5,6 +5,8 @@ Internal configuration for Celery application setup.
 External configuration (concurrency, log level) is handled by the shell script.
 """
 
+from functools import lru_cache
+
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -56,3 +58,14 @@ class WorkerConfig(BaseSettings):
         }
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
+
+@lru_cache
+def get_worker_config() -> WorkerConfig:
+    """
+    Get the worker configuration. Uses lru_cache to avoid repeated loading
+
+    Returns:
+        WorkerConfig: The worker configuration.
+    """
+    return WorkerConfig()

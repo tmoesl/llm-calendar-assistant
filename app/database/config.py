@@ -5,6 +5,8 @@ Configuration for database service including connection settings,
 pool configuration, and environment-specific behavior.
 """
 
+from functools import lru_cache
+
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -38,3 +40,14 @@ class DbConfig(BaseSettings):
         }
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
+
+@lru_cache
+def get_db_config() -> DbConfig:
+    """
+    Get the database configuration. Uses lru_cache to avoid repeated loading
+
+    Returns:
+        DbConfig: The database configuration.
+    """
+    return DbConfig()
