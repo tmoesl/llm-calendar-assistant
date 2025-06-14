@@ -10,7 +10,7 @@ from googleapiclient.discovery import Resource
 from googleapiclient.errors import HttpError
 
 from app.calendar.schema import GoogleEventResponse
-from app.services.logger_factory import logger
+from app.logging.factory import logger
 
 
 class GoogleCalendarService:

@@ -8,9 +8,9 @@ It includes all API routers and sets up the application configuration.
 from fastapi import FastAPI
 
 from app.api.router import router as api_router
+from app.logging.config import API
+from app.logging.factory import logger, setup_service_logger
 from app.middleware.logger import RequestContextMiddleware
-from app.services.logger_config import API
-from app.services.logger_factory import logger, setup_service_logger
 
 # Setup logging for FastAPI (pure configuration)
 setup_service_logger(API)

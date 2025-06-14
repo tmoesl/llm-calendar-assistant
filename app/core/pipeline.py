@@ -15,8 +15,8 @@ from app.core.node import Node
 from app.core.router import Router
 from app.core.schema.pipeline import NodeConfig, PipelineSchema
 from app.core.schema.task import TaskContext
-from app.services.logger_config import PIPELINE, WORKER
-from app.services.logger_factory import logger, set_service_tag
+from app.logging.config import PIPELINE, WORKER
+from app.logging.factory import logger, set_service_tag
 
 
 class Pipeline(ABC):

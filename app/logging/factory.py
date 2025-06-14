@@ -11,7 +11,7 @@ import time
 from contextvars import ContextVar
 from pathlib import Path
 
-from app.services.logger_config import LogConfig, get_log_config
+from app.logging.config import LogConfig, get_log_config
 
 # Context variable to store current request ID
 _request_id: ContextVar[str] = ContextVar("request_id", default="--------")

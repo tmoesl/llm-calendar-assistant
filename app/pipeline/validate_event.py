@@ -12,8 +12,8 @@ from app.core.exceptions import ErrorMessages, LLMServiceError, ValidationError
 from app.core.node import Node
 from app.core.schema.task import TaskContext
 from app.llm.factory import LLMFactory
+from app.logging.factory import logger
 from app.pipeline.schema.validate import ValidateContext, ValidateResponse
-from app.services.logger_factory import logger
 from app.services.prompt_loader import PromptManager
 
 
