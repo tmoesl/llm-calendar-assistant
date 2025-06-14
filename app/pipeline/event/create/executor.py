@@ -6,9 +6,9 @@ Handles the creation of calendar events using the Google Calendar API.
 """
 
 from app.calendar.auth import GoogleAuthClient
+from app.calendar.config import get_calendar_config
 from app.calendar.schema import GoogleEventResponse, create_event_model_to_request
 from app.calendar.service import GoogleCalendarService
-from app.config.settings import get_settings
 from app.core.exceptions import CalServiceError, ErrorMessages, ValidationError
 from app.core.node import Node
 from app.core.schema.task import TaskContext
@@ -20,9 +20,9 @@ class CreateEventExecutor(Node):
 
     def __init__(self):
         """Initialize with Google Calendar client."""
-        settings = get_settings()
+        config = get_calendar_config()
         self.client = GoogleAuthClient()
-        self.calendar_id = settings.app.calendar_id
+        self.calendar_id = config.calendar_id
         logger.info("Initialized %s", self.node_name)
 
     def process(self, task_context: TaskContext) -> TaskContext:
@@ -40,20 +40,18 @@ class CreateEventExecutor(Node):
         # Convert to Google API request model
         create_request = create_event_model_to_request(model=event_model)
 
-        # Initialize calendar service
-        service = self.client.authenticate()
-        calendar_service = GoogleCalendarService(service)
-
         try:
+            # Initialize calendar service
+            service = self.client.authenticate()
+            calendar_service = GoogleCalendarService(service)
+
             # Create the event
             created_event_raw = calendar_service.create_event(
                 calendar_id=self.calendar_id,
                 event_body=create_request.model_dump(exclude_none=True),
             )
-        except Exception as api_error:
-            raise CalServiceError(
-                ErrorMessages.calendar_failed("event creation", str(api_error))
-            ) from api_error
+        except Exception as e:
+            raise CalServiceError(ErrorMessages.calendar_failed("event creation", str(e))) from e
 
         # Validate response with schema
         created_event = GoogleEventResponse(**created_event_raw)
