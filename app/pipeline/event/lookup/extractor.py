@@ -15,7 +15,7 @@ from app.llm.factory import LLMFactory
 from app.logging.factory import logger
 from app.pipeline.schema.lookup import LookupContext, LookupResponse
 from app.services.prompt_loader import PromptManager
-from app.utils.datetime_utils import get_datetime_reference
+from app.shared.datetime import get_datetime_reference
 
 
 class LookupEventExtractor(Node):

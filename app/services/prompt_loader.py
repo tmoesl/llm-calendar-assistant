@@ -1,3 +1,11 @@
+"""
+Prompt Management Module
+
+This module provides functionality for loading and rendering prompt templates with frontmatter.
+It uses Jinja2 for template rendering and python-frontmatter for metadata handling,
+implementing a singleton pattern for template environment management.
+"""
+
 from pathlib import Path
 
 import frontmatter
@@ -9,14 +17,6 @@ from jinja2 import (
     TemplateNotFound,
     meta,
 )
-
-"""
-Prompt Management Module
-
-This module provides functionality for loading and rendering prompt templates with frontmatter.
-It uses Jinja2 for template rendering and python-frontmatter for metadata handling,
-implementing a singleton pattern for template environment management.
-"""
 
 
 class PromptManager:
