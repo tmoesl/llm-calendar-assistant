@@ -7,7 +7,7 @@ Provides reference datetime information for LLM function calls.
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-from app.config.settings import get_settings
+from app.calendar.config import get_calendar_config
 from app.core.schema.event import EventDateTime
 
 
@@ -20,8 +20,8 @@ def get_datetime_reference() -> EventDateTime:
         EventDateTime: Current datetime in user timezone
                       with properly formatted dateTime and timeZone fields
     """
-    settings = get_settings()
-    user_tz = settings.app.user_timezone
+    config = get_calendar_config()
+    user_tz = config.user_timezone
     tz = ZoneInfo(user_tz)
 
     current = datetime.now(tz)

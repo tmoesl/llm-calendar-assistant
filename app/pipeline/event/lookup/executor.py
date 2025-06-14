@@ -4,13 +4,13 @@ Handles the retrieval of calendar events.
 """
 
 from app.calendar.auth import GoogleAuthClient
+from app.calendar.config import get_calendar_config
 from app.calendar.schema import (
     GoogleEventResponse,
     GoogleLookupEventResponse,
     lookup_event_model_to_request,
 )
 from app.calendar.service import GoogleCalendarService
-from app.config.settings import get_settings
 from app.core.exceptions import CalServiceError, ErrorMessages, ValidationError
 from app.core.node import Node
 from app.core.schema.task import TaskContext
@@ -22,9 +22,9 @@ class LookupEventExecutor(Node):
 
     def __init__(self):
         """Initialize with Google Calendar client."""
-        settings = get_settings()
+        config = get_calendar_config()
         self.client = GoogleAuthClient()
-        self.calendar_id = settings.app.calendar_id
+        self.calendar_id = config.calendar_id
         logger.info("Initialized %s", self.node_name)
 
     def process(self, task_context: TaskContext) -> TaskContext:
@@ -41,11 +41,11 @@ class LookupEventExecutor(Node):
         # Get validated event search parameters
         search_params = extractor_result["response_model"]
 
-        # Initialize calendar service
-        service = self.client.authenticate()
-        calendar_service = GoogleCalendarService(service)
-
         try:
+            # Initialize calendar service
+            service = self.client.authenticate()
+            calendar_service = GoogleCalendarService(service)
+
             # Find matching events
             if search_params.event_id:
                 # Direct event ID lookup using events.get
@@ -67,10 +67,8 @@ class LookupEventExecutor(Node):
                     calendar_id=self.calendar_id,
                     **lookup_request.model_dump(exclude_none=True),
                 )
-        except Exception as api_error:
-            raise CalServiceError(
-                ErrorMessages.calendar_failed("event lookup", str(api_error))
-            ) from api_error
+        except Exception as e:
+            raise CalServiceError(ErrorMessages.calendar_failed("event lookup", str(e))) from e
 
         # Validate each event with schema
         validated_events = [GoogleEventResponse(**event) for event in events_raw if event]
