@@ -7,10 +7,10 @@ Validates security and legitimacy of calendar requests.
 
 from typing import Any
 
-from app.config.settings import get_settings
 from app.core.exceptions import ErrorMessages, LLMServiceError, ValidationError
 from app.core.node import Node
 from app.core.schema.task import TaskContext
+from app.llm.config import get_llm_config
 from app.llm.factory import LLMFactory
 from app.logging.factory import logger
 from app.pipeline.schema.validate import ValidateContext, ValidateResponse
@@ -22,8 +22,8 @@ class ValidateEvent(Node):
 
     def __init__(self):
         """Initialize validator"""
-        settings = get_settings()
-        self.confidence_threshold = settings.llm.confidence_threshold
+        config = get_llm_config()
+        self.confidence_threshold = config.confidence_threshold
         self.llm_provider = LLMFactory("openai")
         logger.info("Initialized %s", self.node_name)
 

@@ -27,11 +27,11 @@ def get_log_config() -> LogConfig:
 config = get_calendar_config()
 user_tz = config.user_timezone
 
-llm_config = get_llm_config()
-openai_settings = llm_config.openai
+config = get_llm_config()
+openai_settings = config.openai
 
-log_config = get_log_config()
-log_level = log_config.level
+config = get_log_config()
+log_level = config.level
 ```
 
 ### Service Objects: New Instances
