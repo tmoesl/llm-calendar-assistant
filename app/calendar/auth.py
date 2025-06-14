@@ -180,7 +180,7 @@ class GoogleAuthClient:
             )
             if not self._service:
                 raise AuthenticationError(f"Failed to build {api_name} service: service is None")
-            logger.info("Built %s service (v%s)", api_name, api_version)
+            logger.debug("Built %s service (v%s)", api_name, api_version)
             return self._service
 
         except Exception as e:
