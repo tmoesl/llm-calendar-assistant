@@ -7,7 +7,7 @@ Simple local development setup using a hybrid approach:
 
 ## 📋 Prerequisites
 
-- **Initial setup completed** → See [README](README.md)
+- **Initial setup completed** → See [README](../README.md)
 - **Docker** → Installed and running
 
 ## 🚀 Quick Start
@@ -26,6 +26,8 @@ make flower   # Terminal 4: Monitoring (optional)
 
 ## 🌐 Access Points
 
+> **Note:** URLs below use default ports from `env.sample`. If you've changed `API_PORT` or `FLOWER_PORT` in your `.env` file, adjust the URLs accordingly.
+
 ### Services
 | Service | URL | Purpose |
 |---------|-----|---------|
@@ -36,7 +38,7 @@ make flower   # Terminal 4: Monitoring (optional)
 ### API Service Endpoints
 | Endpoint | Method | URL | Purpose |
 |----------|--------|-----|---------|
-| **Health** | GET | http://localhost:8080/api/v1/health/ | Basic health check |
+| **Health** | GET | http://localhost:8080/api/v1/health | Basic health check |
 | **Ready** | GET | http://localhost:8080/api/v1/health/ready | Service readiness check |
 | **Auth Status** | GET | http://localhost:8080/api/v1/calendar/auth/status | Check calendar authentication |
 | **Auth Revoke** | POST | http://localhost:8080/api/v1/calendar/auth/revoke | Revoke calendar authentication |
@@ -74,7 +76,7 @@ make doctor        # System health check
 **Common Issues:**
 - Docker not running → Start Docker Desktop
 - Port conflicts → Check `lsof -i :8080` (or :6379, :5555)
-- Missing `.env` → Copy from `.env.example`
+- Missing `.env` → Copy from `env.sample`
 
 ---
 
