@@ -127,7 +127,7 @@ def _check_flower() -> dict[str, str]:
         }
 
 
-@health_router.get("/")
+@health_router.get("")
 async def basic_health() -> dict[str, Any]:
     """
     Basic health check - always returns healthy.

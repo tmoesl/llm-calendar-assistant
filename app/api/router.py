@@ -41,7 +41,7 @@ router.include_router(
 router.include_router(
     calendar_router,
     prefix="/calendar/auth",
-    tags=["calendar", "auth"],
+    tags=["calendar"],
     responses={
         status.HTTP_401_UNAUTHORIZED: {"description": "Authentication required"},
         status.HTTP_500_INTERNAL_SERVER_ERROR: {"description": "Internal server error"},
