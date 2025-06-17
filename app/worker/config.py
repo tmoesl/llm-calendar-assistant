@@ -17,7 +17,6 @@ class WorkerConfig(BaseSettings):
     # Redis connection settings
     redis_host: str = Field(alias="REDIS_HOST")
     redis_port: int = Field(default=6379, alias="REDIS_PORT")
-    redis_db: int = Field(default=0, alias="REDIS_DB")
 
     # Worker operational settings
     concurrency: int = Field(default=4, alias="CELERY_CONCURRENCY")
@@ -26,7 +25,7 @@ class WorkerConfig(BaseSettings):
     @property
     def redis_url(self) -> str:
         """Redis URL for Celery broker."""
-        return f"redis://{self.redis_host}:{self.redis_port}/{self.redis_db}"
+        return f"redis://{self.redis_host}:{self.redis_port}/0"
 
     @property
     def celery_settings(self) -> dict:

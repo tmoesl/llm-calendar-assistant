@@ -29,7 +29,6 @@ PROJECT_NAME ?= llm-calendar-assistant
 API_PORT ?= 8080
 FLOWER_PORT ?= 5555
 REDIS_PORT ?= 6379
-REDIS_DB ?= 0
 
 # Container names
 REDIS_CONTAINER=${PROJECT_NAME}_redis
@@ -133,7 +132,7 @@ flower:
 		docker run -d --rm --name $(FLOWER_CONTAINER) -p $(FLOWER_PORT):5555 \
 			$(DOCKER_HOST_FLAGS) \
 			mher/flower:2.0 \
-			celery --broker=redis://host.docker.internal:$(REDIS_PORT)/$(REDIS_DB) flower --port=5555 --auto_refresh=True > /dev/null; \
+			celery --broker=redis://host.docker.internal:$(REDIS_PORT)/0 flower --host=0.0.0.0 --port=5555 --auto_refresh=True > /dev/null; \
 		sleep 2; \
 		echo "✅ Flower started"; \
 	else \
@@ -156,7 +155,7 @@ api:
 	@./migrate.sh
 	@echo ""
 	@echo "💻 Starting server..."
-	@uv run uvicorn app.main:app --host localhost --port $(API_PORT) --reload
+	@uv run uvicorn app.main:app --host=localhost --port=$(API_PORT) --reload
 
 # -----------------------------------------------------------------------------
 # Utilities
