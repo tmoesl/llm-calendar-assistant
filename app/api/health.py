@@ -65,6 +65,17 @@ def _get_celery_app():
     return celery_app
 
 
+def _get_flower_url():
+    """Get Flower URL for health checks."""
+    if not REQUESTS_AVAILABLE:
+        raise ImportError("Requests library not available")
+
+    from app.worker.config import get_worker_config
+
+    worker_config = get_worker_config()
+    return worker_config.flower_url
+
+
 def _check_database(db: Session) -> dict[str, str]:
     """Check database connectivity."""
     try:
@@ -105,16 +116,14 @@ def _check_celery() -> dict[str, Any]:
 
 def _check_flower() -> dict[str, str]:
     """Check Flower monitoring service."""
-    if not REQUESTS_AVAILABLE:
-        return {
-            "status": "unavailable",
-            "message": "Requests library not available for Flower check",
-        }
-
     try:
-        response = requests.get("http://localhost:5555", timeout=5)
+        flower_url = _get_flower_url()
+        response = requests.get(flower_url, timeout=5)
         if response.status_code == 200 and "Flower" in response.text:
-            return {"status": "healthy", "message": "Flower monitoring service accessible"}
+            return {
+                "status": "healthy",
+                "message": f"Flower monitoring service accessible at {flower_url}",
+            }
         else:
             return {
                 "status": "unhealthy",

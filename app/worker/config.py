@@ -18,6 +18,10 @@ class WorkerConfig(BaseSettings):
     redis_host: str = Field(alias="REDIS_HOST")
     redis_port: int = Field(alias="REDIS_PORT")
 
+    # Flower connection settings
+    flower_host: str = Field(alias="FLOWER_HOST")
+    flower_port: int = Field(alias="FLOWER_PORT")
+
     # Worker operational settings
     concurrency: int = Field(default=4, alias="CELERY_CONCURRENCY")
     log_level: str = Field(default="DEBUG", alias="CELERY_LOG_LEVEL")
@@ -31,6 +35,16 @@ class WorkerConfig(BaseSettings):
         """
         port = self.redis_port if self.redis_host == "localhost" else 6379
         return f"redis://{self.redis_host}:{port}/0"
+
+    @property
+    def flower_url(self) -> str:
+        """Flower URL for monitoring - environment-aware connection.
+
+        If Flower host is 'localhost', use the external port (host-to-container).
+        Otherwise, assume container-to-container communication and use internal port (5555).
+        """
+        port = self.flower_port if self.flower_host == "localhost" else 5555
+        return f"http://{self.flower_host}:{port}"
 
     @property
     def celery_settings(self) -> dict:
