@@ -24,11 +24,10 @@ endif
 include .env
 export
 
-# Default values
-PROJECT_NAME ?= llm-calendar-assistant
-API_PORT ?= 8080
-FLOWER_PORT ?= 5555
-REDIS_PORT ?= 6379
+# Infrastructure ports and project name must be explicitly set in .env
+REQUIRED_VARS := API_PORT FLOWER_PORT REDIS_PORT PROJECT_NAME
+$(foreach var,$(REQUIRED_VARS),\
+  $(if $(value $(var)),,$(error "$(var) not set in .env")))
 
 # Container names
 REDIS_CONTAINER=${PROJECT_NAME}_redis
