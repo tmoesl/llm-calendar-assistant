@@ -30,8 +30,8 @@ class WorkerConfig(BaseSettings):
     def redis_url(self) -> str:
         """Redis URL for Celery broker - environment-aware connection.
 
-        If Redis host is 'localhost', use the external port (host-to-container).
-        Otherwise, assume container-to-container communication and use internal port (6379).
+        Uses external port for localhost (host-to-container communication).
+        Uses standard port 6379 for container-to-container communication.
         """
         port = self.redis_port if self.redis_host == "localhost" else 6379
         return f"redis://{self.redis_host}:{port}/0"
@@ -40,8 +40,8 @@ class WorkerConfig(BaseSettings):
     def flower_url(self) -> str:
         """Flower URL for monitoring - environment-aware connection.
 
-        If Flower host is 'localhost', use the external port (host-to-container).
-        Otherwise, assume container-to-container communication and use internal port (5555).
+        Uses external port for localhost (host-to-container communication).
+        Uses standard port 5555 for container-to-container communication.
         """
         port = self.flower_port if self.flower_host == "localhost" else 5555
         return f"http://{self.flower_host}:{port}"
