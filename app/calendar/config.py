@@ -28,13 +28,14 @@ class CalendarConfig(BaseSettings):
         alias="CALENDAR_USER_TIMEZONE",
     )
 
-    # OAuth Authentication Paths
+    # OAuth Authentication Paths (mounts to /app/tokens/token.json in docker-compose.yml)
     token_path: Path = Field(
-        default=Path("token.json"),
+        default=Path("tokens/token.json"),
         description="Path to store OAuth refresh token",
         alias="CALENDAR_TOKEN_PATH",
     )
 
+    # OAuth Authentication Paths (mounts to /app/credentials.json in docker-compose.yml)
     credentials_path: Path = Field(
         default=Path("credentials.json"),
         description="Path to Google OAuth client credentials file",
