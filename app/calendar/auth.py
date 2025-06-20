@@ -180,7 +180,7 @@ class GoogleAuthClient:
                     raise AuthenticationError(
                         "No valid Google Calendar credentials found in Docker environment. "
                         "Please ensure tokens/token.json contains valid credentials. "
-                        "If credentials were revoked, regenerate them locally with: python get_token.py"
+                        "If credentials were revoked, regenerate them locally with: ./scripts/init_token.sh"
                     )
 
                 logger.info("Starting OAuth flow for new credentials")

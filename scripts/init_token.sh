@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "🔄 OAuth Token Migration - Named Volume Setup"
+echo "🔄 OAuth Token Initialization - Named Volume Setup"
 echo ""
 
 # Environment validation and loading
@@ -14,14 +14,19 @@ fi
 source ./.env
 echo "✅ Project: $PROJECT_NAME"
 
-# Check if token.json exists on host
+# Check if token.json exists, generate if missing
 if [[ ! -f "token.json" ]]; then
-    echo "ℹ️  No existing token.json found on host"
-    echo "   Named volume will start empty - run: python get_token.py"
-    exit 0
+    echo "🔐 Generating OAuth token..."
+    python -m app.services.init_token
+    
+    if [[ ! -f "token.json" ]]; then
+        echo "❌ Token generation failed"
+        exit 1
+    fi
+    echo "✅ Token generated successfully"
+else
+    echo "✅ Using existing token.json"
 fi
-
-echo "📋 Found existing token.json on host"
 
 # Start services to create the named volume
 echo "🚀 Starting containers to create named volume..."
@@ -44,7 +49,7 @@ docker run --rm \
     alpine:latest sh -c 'chown -R 999:999 /app/tokens && chmod 755 /app/tokens && chmod 644 /app/tokens/token.json'
 
 echo ""
-echo "✅ Migration completed!"
+echo "✅ Initialization completed!"
 echo "   • Host token.json copied to named volume at tokens/token.json"
 echo "   • Directory and file permissions set for container users (UID:GID 999:999)"
 echo "   • All containers will now use shared named volume"

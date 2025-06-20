@@ -20,23 +20,19 @@ The token file is stored at `/app/tokens/token.json` within containers.
 
 ## 🚀 Setup Process
 
-### 1. Initial Token Generation
+### 1. Initialize OAuth Token and Named Volume
 ```bash
-# Generate token.json on host
-python get_token.py
+# Auto-generate token.json (if missing) and copy to Docker named volume
+./scripts/init_token.sh
 ```
 
-### 2. Migrate to Named Volume
-```bash
-# Copy host token to Docker named volume
-./docker/migrate_token.sh
-```
-
-### 3. Start Services
+### 2. Start Services
 ```bash
 # Start with named volume
 ./docker/start.sh
 ```
+
+> **Note**: The script automatically generates `token.json` if it doesn't exist, eliminating the need for manual token generation. If you need to regenerate tokens manually (e.g., after revocation), you can still run `python -m app.services.init_token` separately.
 
 ## 🔄 Token Lifecycle
 
@@ -74,8 +70,8 @@ docker volume ls | grep token_data
 # Check token content
 docker compose exec api cat /app/tokens/token.json
 
-# Re-run migration if needed
-./docker/migrate_token.sh
+# Re-run initialization if needed
+./scripts/init_token.sh
 ```
 
 ### Token Corruption
@@ -83,9 +79,9 @@ docker compose exec api cat /app/tokens/token.json
 # Clear corrupted token
 docker compose exec api sh -c 'echo "" > /app/tokens/token.json'
 
-# Regenerate token
-python get_token.py
-./docker/migrate_token.sh
+# Remove local token and regenerate
+rm token.json
+./scripts/init_token.sh
 ```
 
 ### Multi-Container Issues
@@ -98,23 +94,4 @@ docker compose exec celery ls -la /app/tokens/token.json
 docker compose restart
 ```
 
-## 📋 Migration from Bind Mounts
-
-### Old Approach (Deprecated)
-```yaml
-volumes:
-  - ./token.json:/app/token.json:rw  # ❌ Bind mount
-```
-
-### New Approach (Recommended)
-```yaml
-volumes:
-  - token_data:/app/tokens           # ✅ Named volume
-```
-
-### Why Named Volumes are Better
-- ✅ True atomic operations on native Linux filesystems
-- ✅ No host/container race conditions  
-- ✅ Multi-container safety guaranteed
-- ✅ Consistent filesystem behavior
-- ✅ Production-ready reliability 
+ 

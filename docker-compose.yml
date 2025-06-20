@@ -22,6 +22,8 @@ services:
       dockerfile: docker/Dockerfile.api
     container_name: ${PROJECT_NAME}_api_dev
     env_file: .env
+    environment:
+      - CALENDAR_TOKEN_PATH=tokens/token.json
     ports:
       - "${API_PORT}:8080"    # [HOST_PORT]:[CONTAINER_PORT] - FastAPI server
     volumes:
@@ -45,6 +47,8 @@ services:
       dockerfile: docker/Dockerfile.api
     container_name: ${PROJECT_NAME}_api
     env_file: .env
+    environment:
+      - CALENDAR_TOKEN_PATH=tokens/token.json
     ports:
       - "${API_PORT}:8080"    # [HOST_PORT]:[CONTAINER_PORT] - FastAPI server
     volumes:
@@ -65,6 +69,8 @@ services:
       context: .
       dockerfile: docker/Dockerfile.celery
     env_file: .env
+    environment:
+      - CALENDAR_TOKEN_PATH=tokens/token.json
     volumes:
       - ./logs:/app/logs
       - ./app:/app/app        # Hot reload for source code
@@ -82,6 +88,8 @@ services:
       context: .
       dockerfile: docker/Dockerfile.celery
     env_file: .env
+    environment:
+      - CALENDAR_TOKEN_PATH=tokens/token.json
     volumes:
       - ./logs:/app/logs
       - ./credentials.json:/app/credentials.json:ro  # OAuth credentials (never changes)
