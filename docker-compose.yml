@@ -1,5 +1,5 @@
 services:
-  # Redis Message Broker
+  # Redis Message Broker (shared by dev and prod)
   redis:
     image: redis:latest
     container_name: ${PROJECT_NAME}_redis
@@ -15,55 +15,92 @@ services:
       retries: 5
     restart: unless-stopped
    
-  # FastAPI Application
+  # FastAPI Application - Development (with hot reload)
+  api-dev:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    container_name: ${PROJECT_NAME}_api_dev
+    env_file: .env
+    ports:
+      - "${API_PORT}:8080"    # [HOST_PORT]:[CONTAINER_PORT] - FastAPI server
+    volumes:
+      - ./app:/app/app        # Hot reload for source code
+      - ./alembic:/app/alembic # Hot reload for migrations
+      - ./logs:/app/logs
+      - ./credentials.json:/app/credentials.json:ro  # OAuth credentials (never changes)
+      - token_data:/app/tokens # Shared OAuth token directory (multi-container safe)
+    depends_on:
+      redis:
+        condition: service_healthy
+      celery-dev:
+        condition: service_healthy
+    restart: unless-stopped
+    profiles: ["dev"]
+
+  # FastAPI Application - Production
   api:
     build:
       context: .
       dockerfile: docker/Dockerfile.api
     container_name: ${PROJECT_NAME}_api
-    env_file:
-      - .env
-      - .env.docker
+    env_file: .env
     ports:
       - "${API_PORT}:8080"    # [HOST_PORT]:[CONTAINER_PORT] - FastAPI server
     volumes:
       - ./logs:/app/logs
+      - ./credentials.json:/app/credentials.json:ro  # OAuth credentials (never changes)
+      - token_data:/app/tokens # Shared OAuth token directory (multi-container safe)
     depends_on:
       redis:
         condition: service_healthy
       celery:
         condition: service_healthy
     restart: unless-stopped
+    profiles: ["prod"]
 
-  # Celery Worker
+  # Celery Worker - Development (with hot reload)
+  celery-dev:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.celery
+    env_file: .env
+    volumes:
+      - ./logs:/app/logs
+      - ./app:/app/app        # Hot reload for source code
+      - ./credentials.json:/app/credentials.json:ro  # OAuth credentials (never changes)
+      - token_data:/app/tokens # Shared OAuth token directory (multi-container safe)
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    profiles: ["dev"]
+
+  # Celery Worker - Production
   celery:
     build:
       context: .
       dockerfile: docker/Dockerfile.celery
-    env_file:
-      - .env
-      - .env.docker
+    env_file: .env
     volumes:
       - ./logs:/app/logs
-      # Credentials: read-only (never change) | Tokens: writable (refresh needed)
-      - ./credentials.json:/app/credentials.json:ro  
-      - ./token.json:/app/token.json
+      - ./credentials.json:/app/credentials.json:ro  # OAuth credentials (never changes)
+      - token_data:/app/tokens # Shared OAuth token directory (multi-container safe)
     depends_on:
       redis:
         condition: service_healthy
     restart: unless-stopped
     deploy:
       replicas: 2
+    profiles: ["prod"]
 
-  # Celery Flower (Optional monitoring)
+  # Celery Flower (Development monitoring)
   flower:
     build:
       context: .
       dockerfile: docker/Dockerfile.flower
     container_name: ${PROJECT_NAME}_flower
-    env_file:
-      - .env
-      - .env.docker
+    env_file: .env
     ports:
       - "${FLOWER_PORT}:5555"  # [HOST_PORT]:[CONTAINER_PORT] - Flower dashboard
     volumes:
@@ -71,15 +108,16 @@ services:
     depends_on:
       redis:
         condition: service_healthy
-      celery:
+      celery-dev:
         condition: service_healthy
     restart: unless-stopped
-    profiles:
-      - monitoring
+    profiles: ["dev"]
 
 # Named volumes for data persistence
 volumes:
   redis_data:
+    driver: local
+  token_data:
     driver: local
 
 # Project-scoped network for service communication

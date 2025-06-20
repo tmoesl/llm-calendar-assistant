@@ -5,6 +5,8 @@ Handles OAuth2 authentication and token management with proper error handling,
 dependency injection, and separation of concerns.
 """
 
+import os
+
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -80,6 +82,14 @@ class GoogleAuthClient:
         if not self._token_path.exists():
             logger.debug("Token file not found: %s", self._token_path)
             return None
+
+        # Check if file is empty (cleared by revoke)
+        try:
+            if self._token_path.stat().st_size == 0:
+                logger.debug("Token file is empty (revoked): %s", self._token_path)
+                return None
+        except Exception:
+            pass
 
         try:
             creds = Credentials.from_authorized_user_file(self._token_path, self._scopes)
@@ -167,6 +177,15 @@ class GoogleAuthClient:
 
             # If no valid credentials, run OAuth flow
             if not self._credentials or not self._credentials.valid:
+                # Provide better error message for Docker environment
+                if _is_docker_environment():
+                    logger.error("No valid credentials in Docker environment")
+                    raise AuthenticationError(
+                        "No valid Google Calendar credentials found in Docker environment. "
+                        "Please ensure tokens/token.json contains valid credentials. "
+                        "If credentials were revoked, regenerate them locally with: python get_token.py"
+                    )
+
                 logger.info("Starting OAuth flow for new credentials")
                 self._credentials = self._run_oauth_flow()
 
@@ -205,10 +224,18 @@ class GoogleAuthClient:
         self._credentials = None
         self._service = None
 
-        # Remove token file
+        # Clear token file (safer for Docker environments than deletion)
         if self._token_path.exists():
             try:
-                self._token_path.unlink()
-                logger.debug("Token file removed: %s", self._token_path)
+                # Write empty content atomically
+                temp_path = self._token_path.with_suffix(".tmp")
+                temp_path.write_text("", encoding="utf-8")
+                temp_path.replace(self._token_path)
+                logger.debug("Token file cleared: %s", self._token_path)
             except Exception as e:
-                raise AuthenticationError(f"Failed to remove token file: {e}") from e
+                raise AuthenticationError(f"Failed to clear token file: {e}") from e
+
+
+def _is_docker_environment() -> bool:
+    """Detect if running in a Docker container."""
+    return os.path.exists("/.dockerenv")

@@ -32,7 +32,8 @@ make flower   # Terminal 4: Monitoring (optional)
 | Service | URL | Purpose |
 |---------|-----|---------|
 | **API** | http://localhost:8080 | Main application |
-| **API Docs** | http://localhost:8080/docs | Interactive documentation |
+| **API Docs** | http://localhost:8080/docs | Interactive documentation (Swagger UI) |
+| **API Docs** | http://localhost:8080/redoc | Alternative documentation (ReDoc) |
 | **Flower** | http://localhost:5555 | Task monitoring |
 
 ### API Service Endpoints
