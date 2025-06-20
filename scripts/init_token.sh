@@ -17,7 +17,7 @@ echo "✅ Project: $PROJECT_NAME"
 # Check if token.json exists on host
 if [[ ! -f "token.json" ]]; then
     echo "ℹ️  No existing token.json found on host"
-    echo "   Named volume will start empty - run: python get_token.py"
+    echo "   Named volume will start empty - run: python -m app.services.init_token"
     exit 0
 fi
 

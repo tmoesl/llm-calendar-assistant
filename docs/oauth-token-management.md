@@ -23,7 +23,7 @@ The token file is stored at `/app/tokens/token.json` within containers.
 ### 1. Initial Token Generation
 ```bash
 # Generate token.json on host
-python get_token.py
+python -m app.services.init_token
 ```
 
 ### 2. Initialize Token in Named Volume
@@ -84,7 +84,7 @@ docker compose exec api cat /app/tokens/token.json
 docker compose exec api sh -c 'echo "" > /app/tokens/token.json'
 
 # Regenerate token
-python get_token.py
+python -m app.services.init_token
 ./scripts/init_token.sh
 ```
 
