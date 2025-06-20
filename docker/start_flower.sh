@@ -2,18 +2,20 @@
 set -euo pipefail
 IFS=$'\n\t'
 
+echo "🚀 Flower Monitoring - Container Startup"
+echo ""
 
-# Flower Monitoring Startup for Docker
-echo "🚀 Starting Flower Monitoring Dashboard..."
-echo "🔧 Broker: redis://$REDIS_HOST:6379/0 (internal)"
-echo "🔧 Binding: 0.0.0.0:5555 (internal)"
-
+echo "🔧 Configuration:"
+echo "   Broker: redis://redis:6379/0 (internal)"
+echo "   Binding: 0.0.0.0:5555 (internal)"
+echo "   Auto Refresh: Enabled"
 echo ""
 
 # Flower Command (using default task columns)
-CMD=("celery" "--broker=redis://$REDIS_HOST:6379/0" "flower" "--host=0.0.0.0" "--port=5555" "--auto_refresh=True")  # Fixed port/DB for internal communication
+CMD=("celery" "--broker=redis://redis:6379/0" "flower" "--host=0.0.0.0" "--port=5555" "--auto_refresh=True")
 
-# Execute
+echo ""
+echo "▶️  Starting dashboard..."
 exec "${CMD[@]}"
 
 

@@ -1,105 +1,104 @@
-# Docker Setup Guide
+# Docker Operations Guide
 
-Streamlined Docker management for the LLM Calendar Assistant.
+Docker-specific management commands for the LLM Calendar Assistant.
+
+> 📖 **Setup Instructions**: See the main [README.md](../README.md#-quick-start) for complete environment setup, prerequisites, and initial configuration.
 
 ## 🏗️ Container Architecture
 
-- **Redis**: Message broker and result backend (persistent storage)
-- **API**: FastAPI application server (health checks, REST endpoints)  
-- **Celery**: Background task workers (scalable replicas and concurrency)
-- **Flower**: Optional monitoring dashboard (worker stats, task history)
-
-**Startup Order**: Redis → Celery → API → Flower (health-checked dependencies ensure proper initialization)
-
-## 🌐 Access Points
-
-- **API Health**: http://localhost:8080/api/v1/health
-- **API Docs**: http://localhost:8080/docs
-- **Flower Dashboard**: http://localhost:5555 (with `--monitoring`)
-
-## 🔧 Environment Configuration
-
-**Layered approach:** `.env` (baseline) + `.env.docker` (container overrides)
-
-| Setting | Development | Container |
-|---------|-------------|-----------|
-| `REDIS_HOST` | `localhost` | `redis` |
-| `LOG_LEVEL` | `DEBUG` | `INFO` |
-| `CELERY_LOG_LEVEL` | `DEBUG` | `INFO` |
+- **Redis**: Message broker and task queue
+- **API**: FastAPI application server  
+- **Celery**: Background task workers (auto-scaling)
+- **Flower**: Task monitoring dashboard (development only)
 
 ## 🚀 Management Commands
 
-### Start
+### Start Services
 ```bash
-./docker/start.sh                   # Production startup (recommended)
-./docker/start.sh --quick           # Fastest startup
-./docker/start.sh --monitoring      # Include monitoring
-./docker/start.sh --verbose         # Show detailed progress
+./docker/start.sh                   # Production mode
+./docker/start.sh --dev             # Development with monitoring
 ```
 
-### Logs
+### View Logs
 ```bash
-./docker/logs.sh              # All logs (last 50 lines)
-./docker/logs.sh api -f       # Follow API logs
-./docker/logs.sh celery       # Worker logs
+./docker/logs.sh                    # All services
+./docker/logs.sh api                # Specific service (api, celery, redis, flower)
 ```
 
-### Stop
+### Stop Services
 ```bash
-./docker/stop.sh               # Clean stop (recommended)
-./docker/stop.sh --quick       # Fastest stop
-./docker/stop.sh --cleanup     # For network issues
-./docker/stop.sh --all         # Fresh start
+./docker/stop.sh                    # Normal stop
+./docker/stop.sh --clean            # Stop + cleanup volumes
 ```
 
-## 🔍 Health Monitoring
+## 🌐 Service Access
+
+| Service | URL | Purpose |
+|---------|-----|---------|
+| **API** | http://localhost:8080 | REST endpoints |
+| **Health Check** | http://localhost:8080/api/v1/health | System status |
+| **API Docs** | http://localhost:8080/docs | Swagger UI |
+| **API Docs** | http://localhost:8080/redoc | ReDoc |
+| **Flower** | http://localhost:5555 | Task monitoring (dev only) |
+
+## 🔍 Health & Status
 
 ```bash
-# API health check
-docker compose -p llm-calendar-assistant exec api curl -s http://localhost:8080/api/v1/health
+# Quick health check
+curl http://localhost:8080/api/v1/health
 
-# Celery health check
-docker compose -p llm-calendar-assistant exec celery celery -A app.worker.start_worker:app inspect ping
-
-# Redis health check
-docker compose -p llm-calendar-assistant exec redis redis-cli ping
-
-# Flower health check
-docker compose -p llm-calendar-assistant exec flower curl -s http://localhost:5555 | grep -q "Flower" && echo "Flower is running!"
+# Full system check
+curl "http://localhost:8080/api/v1/health/ready?check_flower=true"
 
 # Container status
-docker compose -p llm-calendar-assistant ps
+docker compose ps
+```
+
+## 🐛 Docker Troubleshooting
+
+```bash
+# Check container status
+docker compose ps
+
+# View specific service logs with recent history
+./docker/logs.sh <service_name>
+
+# Restart specific service
+docker compose restart <service_name>
+
+# Check Docker configuration
+docker compose config
 
 # Resource usage
-docker compose -p llm-calendar-assistant stats
+docker compose stats
 
-# 
+# Inspect OAuth token in named volume
+docker compose exec api cat /app/tokens/token.json
 ```
 
-## 🐛 Troubleshooting
+## ⚙️ Docker-Specific Configuration
 
+Key Docker settings in `.env`:
+
+| Setting | Default | Purpose |
+|---------|---------|---------|
+| `API_PORT` | `8080` | Host port for API access |
+| `REDIS_PORT` | `6379` | Host port for Redis access |
+| `FLOWER_PORT` | `5555` | Host port for Flower dashboard |
+| `CELERY_CONCURRENCY` | `2` | Workers per container |
+
+These are external host port mappings - internal container ports and hostnames are fixed.
+
+> 📝 **Complete Configuration**: See [README.md](../README.md#2-environment-setup) for all environment variables including database, LLM, and calendar settings.
+
+## 📊 Scaling Workers
+
+Adjust worker concurrency in `.env`:
 ```bash
-# Startup issues
-./docker/start.sh --verbose
-./docker/logs.sh <service> --tail 50
-
-# Configuration
-docker compose -p llm-calendar-assistant config
-
-# Google Calendar credentials
-docker compose -p llm-calendar-assistant exec celery ls -la credentials.json token.json
+CELERY_CONCURRENCY=4    # 4 workers per container
 ```
 
-## 📊 Scaling
-
+Then restart:
 ```bash
-# Horizontal: Configure worker containers (hardcoded: 2 replicas)
-# Edit docker-compose.yml: replicas: 2
-docker compose up -d
-
-# Vertical: Configure workers per container  
-# Edit .env: CELERY_CONCURRENCY=8
 docker compose restart celery
-
-# Result: 2 containers × 8 workers = 16 concurrent tasks
 ```
