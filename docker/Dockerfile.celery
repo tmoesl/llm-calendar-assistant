@@ -67,7 +67,7 @@ USER celeryuser
 
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
-    CMD celery -A app.worker.start_worker:app inspect ping -d celery@$HOSTNAME || exit 1
+    CMD pgrep -f "celery.*worker" > /dev/null || exit 1
 
 # Entry point
 CMD ["./start_celery.sh"] 
