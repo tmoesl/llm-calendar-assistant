@@ -14,37 +14,19 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class WorkerConfig(BaseSettings):
     """Internal Celery application configuration."""
 
-    # Redis connection settings
-    redis_host: str = Field(alias="REDIS_HOST")
-    redis_port: int = Field(alias="REDIS_PORT")
-
-    # Flower connection settings
-    flower_host: str = Field(alias="FLOWER_HOST")
-    flower_port: int = Field(alias="FLOWER_PORT")
-
     # Worker operational settings
     concurrency: int = Field(default=4, alias="CELERY_CONCURRENCY")
     log_level: str = Field(default="DEBUG", alias="CELERY_LOG_LEVEL")
 
     @property
     def redis_url(self) -> str:
-        """Redis URL for Celery broker - environment-aware connection.
-
-        Uses external port for localhost (host-to-container communication).
-        Uses standard port 6379 for container-to-container communication.
-        """
-        port = self.redis_port if self.redis_host == "localhost" else 6379
-        return f"redis://{self.redis_host}:{port}/0"
+        """Redis URL for Celery broker - Docker container communication."""
+        return "redis://redis:6379/0"
 
     @property
     def flower_url(self) -> str:
-        """Flower URL for monitoring - environment-aware connection.
-
-        Uses external port for localhost (host-to-container communication).
-        Uses standard port 5555 for container-to-container communication.
-        """
-        port = self.flower_port if self.flower_host == "localhost" else 5555
-        return f"http://{self.flower_host}:{port}"
+        """Flower URL for monitoring - Docker container communication."""
+        return "http://flower:5555"
 
     @property
     def celery_settings(self) -> dict:
