@@ -3,6 +3,9 @@ Google Calendar OAuth Token Initializer
 
 This script performs the initial OAuth flow to generate token.json for Google Calendar access.
 Run this script locally (outside containers) where a browser is available.
+
+Note: This is typically called automatically by ./scripts/init_token.sh when token.json is missing.
+You can also run this directly via: python -m app.services.init_token
 """
 
 import sys

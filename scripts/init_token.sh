@@ -14,14 +14,19 @@ fi
 source ./.env
 echo "✅ Project: $PROJECT_NAME"
 
-# Check if token.json exists on host
+# Check if token.json exists, generate if missing
 if [[ ! -f "token.json" ]]; then
-    echo "ℹ️  No existing token.json found on host"
-    echo "   Named volume will start empty - run: python -m app.services.init_token"
-    exit 0
+    echo "🔐 Generating OAuth token..."
+    python -m app.services.init_token
+    
+    if [[ ! -f "token.json" ]]; then
+        echo "❌ Token generation failed"
+        exit 1
+    fi
+    echo "✅ Token generated successfully"
+else
+    echo "✅ Using existing token.json"
 fi
-
-echo "📋 Found existing token.json on host"
 
 # Start services to create the named volume
 echo "🚀 Starting containers to create named volume..."
