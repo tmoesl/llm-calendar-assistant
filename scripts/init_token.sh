@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "🔄 OAuth Token Migration - Named Volume Setup"
+echo "🔄 OAuth Token Initialization - Named Volume Setup"
 echo ""
 
 # Environment validation and loading
@@ -44,7 +44,7 @@ docker run --rm \
     alpine:latest sh -c 'chown -R 999:999 /app/tokens && chmod 755 /app/tokens && chmod 644 /app/tokens/token.json'
 
 echo ""
-echo "✅ Migration completed!"
+echo "✅ Initialization completed!"
 echo "   • Host token.json copied to named volume at tokens/token.json"
 echo "   • Directory and file permissions set for container users (UID:GID 999:999)"
 echo "   • All containers will now use shared named volume"

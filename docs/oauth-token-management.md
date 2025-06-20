@@ -26,10 +26,10 @@ The token file is stored at `/app/tokens/token.json` within containers.
 python get_token.py
 ```
 
-### 2. Migrate to Named Volume
+### 2. Initialize Token in Named Volume
 ```bash
 # Copy host token to Docker named volume
-./docker/migrate_token.sh
+./scripts/init_token.sh
 ```
 
 ### 3. Start Services
@@ -74,8 +74,8 @@ docker volume ls | grep token_data
 # Check token content
 docker compose exec api cat /app/tokens/token.json
 
-# Re-run migration if needed
-./docker/migrate_token.sh
+# Re-run initialization if needed
+./scripts/init_token.sh
 ```
 
 ### Token Corruption
@@ -85,7 +85,7 @@ docker compose exec api sh -c 'echo "" > /app/tokens/token.json'
 
 # Regenerate token
 python get_token.py
-./docker/migrate_token.sh
+./scripts/init_token.sh
 ```
 
 ### Multi-Container Issues

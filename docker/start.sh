@@ -17,7 +17,7 @@ echo "✅ Project: $PROJECT_NAME"
 
 # OAuth token check (optional - Docker named volume handles this)
 if [[ -f "token.json" ]]; then
-    echo "ℹ️  Host token.json found - consider: ./docker/migrate_token.sh"
+    echo "ℹ️  Host token.json found - consider: ./scripts/init_token.sh"
 fi
 
 # Profile determination
