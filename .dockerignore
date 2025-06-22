@@ -1,0 +1,90 @@
+# ====== Version Control ====================
+.git
+.gitignore
+.gitattributes
+
+# ====== Python Bytecode & Caches ==========
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.cache/
+
+# ====== Virtual Environments ==============
+.venv/
+venv/
+env/
+ENV/
+.virtualenv/
+
+# ====== Build Artifacts ===================
+build/
+dist/
+.eggs/
+*.egg-info/
+*.egg
+*.whl
+*.tar
+*.img
+
+# ====== Development & Testing =============
+tests/
+.coverage
+.tox/
+.nox/
+htmlcov/
+.pytest_cache/
+*.db
+
+# ====== Logs and Runtime Files ============
+logs/
+*.log
+*.pid
+*.rdb
+
+# ====== Documentation =====================
+docs/
+README.md
+LICENSE
+*.md
+!docker/README.md
+
+# ====== Environment & Secrets =============
+.env
+.env.*
+!.env.sample
+credentials.json
+token.json
+
+# ====== Editor/IDE Configs ================
+.vscode/
+.idea/
+*.code-workspace
+.cursor/
+*.swp
+*.swo
+
+# ====== Jupyter Notebooks ================
+.ipynb_checkpoints/
+
+# ====== OS-generated Files ================
+.DS_Store
+Thumbs.db
+
+# ====== Docker Development Files ==========
+docker-compose.yml
+docker-compose.*.yml
+Dockerfile*
+.dockerignore
+
+# ====== Scripts & Development Tools =======
+scripts/              # Host-only OAuth and migration scripts
+Makefile
+
+# ====== Alembic (keep versions, exclude temp)
+alembic/versions/*.pyc
+alembic/__pycache__/ 

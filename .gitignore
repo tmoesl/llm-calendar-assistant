@@ -1,14 +1,14 @@
-# ====== Bytecode ==========================
+# ====== Python Bytecode ===================
 __pycache__/
 *.py[cod]
 
-# ====== Virtual environments ==============
+# ====== Virtual Environments ==============
 .venv/
 venv/
 env/
 ENV/
 
-# ====== Build artifacts and packaging =====
+# ====== Build Artifacts ===================
 build/
 dist/
 .eggs/
@@ -16,42 +16,47 @@ dist/
 *.egg
 *.whl
 
-# ====== Logs and runtime files ============
+# ====== Docker Artifacts ==================
+*.tar
+*.img
+
+# ====== Logs and Runtime Files ============
 *.log
 *.pid
 *.db
 *.rdb
 
-# ====== Tool caches =======================
+# ====== Tool Caches =======================
 .mypy_cache/
 .ruff_cache/
 .pytest_cache/
 .cache/
 
-# ====== IDE/editor configs ================
+# ====== Editor/IDE Configs ================
 .vscode/
 .idea/
 *.code-workspace
 
-
-# ====== Jupyter notebooks =================
+# ====== Jupyter Notebooks ================
 .ipynb_checkpoints/
 
-# ====== Env variables and secrets =========
+# ====== Environment Variables & Secrets ===
 .env
 .env.*
 credentials.json
 token.json
+!.env.sample
 
-# ====== OS-generated files ================
+# ====== Alembic Migrations ================
+app/alembic/versions/*
+!app/alembic/versions/.gitkeep
+
+# ====== OS-generated Files ================
 .DS_Store
 
-# ====== Vim swap files ====================
+# ====== Vim Swap Files ====================
 *.swp
 *.swo
 
-# ====== Intermediate test files ===========
-testrun.py
-
-# ====== Other files =======================
+# ====== Project/Workspace State ===========
 .cursor/
