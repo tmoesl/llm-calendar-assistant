@@ -2,12 +2,12 @@ services:
   # Redis Message Broker (shared by dev and prod)
   redis:
     image: redis:latest
-    container_name: ${PROJECT_NAME}_redis
+    container_name: ${PROJECT_NAME}-redis
     command: redis-server --appendonly yes --appendfsync everysec
     ports:
       - "${REDIS_PORT}:6379"  # [HOST_PORT]:[CONTAINER_PORT] - Redis standard port
     volumes:
-      - redis_data:/data
+      - redis-data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -20,7 +20,7 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.api
-    container_name: ${PROJECT_NAME}_api_dev
+    container_name: ${PROJECT_NAME}-api-dev
     env_file: .env
     environment:
       - CALENDAR_TOKEN_PATH=tokens/token.json
@@ -33,7 +33,7 @@ services:
       - ./alembic:/app/alembic # Hot reload for migrations
       - ./logs:/app/logs
       - ./credentials.json:/app/credentials.json:ro  # OAuth credentials (never changes)
-      - token_data:/app/tokens # Shared OAuth token directory (multi-container safe)
+      - token-data:/app/tokens # Shared OAuth token directory (multi-container safe)
     depends_on:
       redis:
         condition: service_healthy
@@ -47,7 +47,7 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.api
-    container_name: ${PROJECT_NAME}_api
+    container_name: ${PROJECT_NAME}-api
     env_file: .env
     environment:
       - CALENDAR_TOKEN_PATH=tokens/token.json
@@ -56,7 +56,7 @@ services:
     volumes:
       - ./logs:/app/logs
       - ./credentials.json:/app/credentials.json:ro  # OAuth credentials (never changes)
-      - token_data:/app/tokens # Shared OAuth token directory (multi-container safe)
+      - token-data:/app/tokens # Shared OAuth token directory (multi-container safe)
     depends_on:
       redis:
         condition: service_healthy
@@ -79,7 +79,7 @@ services:
       - ./logs:/app/logs
       - ./app:/app/app        # Hot reload for source code
       - ./credentials.json:/app/credentials.json:ro  # OAuth credentials (never changes)
-      - token_data:/app/tokens # Shared OAuth token directory (multi-container safe)
+      - token-data:/app/tokens # Shared OAuth token directory (multi-container safe)
     depends_on:
       redis:
         condition: service_healthy
@@ -97,7 +97,7 @@ services:
     volumes:
       - ./logs:/app/logs
       - ./credentials.json:/app/credentials.json:ro  # OAuth credentials (never changes)
-      - token_data:/app/tokens # Shared OAuth token directory (multi-container safe)
+      - token-data:/app/tokens # Shared OAuth token directory (multi-container safe)
     depends_on:
       redis:
         condition: service_healthy
@@ -111,7 +111,7 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.flower
-    container_name: ${PROJECT_NAME}_flower
+    container_name: ${PROJECT_NAME}-flower
     env_file: .env
     ports:
       - "${FLOWER_PORT}:5555"  # [HOST_PORT]:[CONTAINER_PORT] - Flower dashboard
@@ -127,13 +127,13 @@ services:
 
 # Named volumes for data persistence
 volumes:
-  redis_data:
+  redis-data:
     driver: local
-  token_data:
+  token-data:
     driver: local
 
 # Project-scoped network for service communication
 networks:
   default:
     driver: bridge
-    name: "${PROJECT_NAME}_network"
+    name: "${PROJECT_NAME}-network"

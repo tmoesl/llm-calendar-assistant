@@ -25,8 +25,8 @@ The system uses a hybrid approach for container images to balance reliability wi
 ### Persistent Storage
 Critical data is preserved through named volumes to ensure system continuity and enable container coordination:
 
-- **`redis_data`**: Persists message queue and task results across container restarts
-- **`token_data`**: Shared OAuth tokens between API and Celery containers with automatic refresh and corruption-safe multi-container access
+- **`redis-data`**: Persists message queue and task results across container restarts
+- **`token-data`**: Shared OAuth tokens between API and Celery containers with automatic refresh and corruption-safe multi-container access
 
 ### Docker Profiles
 Profiles enable environment-specific service deployment, controlling which containers start based on your operational needs:
@@ -152,7 +152,7 @@ docker compose exec api-dev ls -la /app/tokens/
 docker compose exec api sh -c 'echo "" > /app/tokens/token.json'
 ```
 
-**Note**: OAuth tokens are shared between containers via Docker named volumes (`token_data`).
+**Note**: OAuth tokens are shared between containers via Docker named volumes (`token-data`).
 
 ---
 

@@ -39,13 +39,13 @@ sleep 2
 echo "📤 Copying token.json to named volume..."
 docker run --rm \
     -v "$(pwd)/token.json:/host/token.json:ro" \
-    -v "${PROJECT_NAME}_token_data:/app/tokens" \
+    -v "${PROJECT_NAME}_token-data:/app/tokens" \
     alpine:latest cp /host/token.json /app/tokens/token.json
 
 # Fix permissions on the token directory and file for container users
 echo "🔧 Setting correct permissions..."
 docker run --rm \
-    -v "${PROJECT_NAME}_token_data:/app/tokens" \
+    -v "${PROJECT_NAME}_token-data:/app/tokens" \
     alpine:latest sh -c 'chown -R 999:999 /app/tokens && chmod 755 /app/tokens && chmod 644 /app/tokens/token.json'
 
 echo ""
