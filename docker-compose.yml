@@ -24,6 +24,8 @@ services:
     env_file: .env
     environment:
       - CALENDAR_TOKEN_PATH=tokens/token.json
+      - LOG_LEVEL=DEBUG
+      - CELERY_LOG_LEVEL=DEBUG
     ports:
       - "${API_PORT}:8080"    # [HOST_PORT]:[CONTAINER_PORT] - FastAPI server
     volumes:
@@ -71,6 +73,8 @@ services:
     env_file: .env
     environment:
       - CALENDAR_TOKEN_PATH=tokens/token.json
+      - LOG_LEVEL=DEBUG
+      - CELERY_LOG_LEVEL=DEBUG
     volumes:
       - ./logs:/app/logs
       - ./app:/app/app        # Hot reload for source code
