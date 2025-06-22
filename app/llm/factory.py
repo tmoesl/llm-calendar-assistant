@@ -35,7 +35,9 @@ class OpenAIProvider(LLMProvider):
 
     def __init__(self, settings):
         self.settings = settings
-        self.client = instructor.from_openai(OpenAI(api_key=self.settings.api_key))
+        self.client = instructor.from_openai(
+            OpenAI(api_key=self.settings.api_key.get_secret_value())
+        )
 
     def create_completion(
         self, messages: list[dict[str, str]], response_model: type[T], **kwargs: Any
@@ -62,7 +64,9 @@ class AnthropicProvider(LLMProvider):
 
     def __init__(self, settings):
         self.settings = settings
-        self.client = instructor.from_anthropic(Anthropic(api_key=self.settings.api_key))
+        self.client = instructor.from_anthropic(
+            Anthropic(api_key=self.settings.api_key.get_secret_value())
+        )
 
     def create_completion(
         self, messages: list[dict[str, str]], response_model: type[T], **kwargs: Any

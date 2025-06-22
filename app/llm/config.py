@@ -6,7 +6,7 @@ Configuration for LLM providers using Pydantic Settings and Field validation.
 
 from functools import lru_cache
 
-from pydantic import Field, field_validator
+from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -20,7 +20,7 @@ class LLMProviderSettings(BaseSettings):
 class OpenAISettings(LLMProviderSettings):
     """Settings for OpenAI."""
 
-    api_key: str = Field(..., validation_alias="OPENAI_API_KEY")
+    api_key: SecretStr = Field(alias="OPENAI_API_KEY")
     default_model: str = Field(default="gpt-4o", alias="OPENAI_MODEL")
     embedding_model: str = Field(default="text-embedding-3-small", alias="OPENAI_EMBEDDING_MODEL")
     temperature: float = Field(default=0.0, alias="OPENAI_TEMPERATURE")
@@ -28,32 +28,16 @@ class OpenAISettings(LLMProviderSettings):
     max_retries: int = Field(default=3, alias="OPENAI_MAX_RETRIES")
     timeout: int = Field(default=30, alias="OPENAI_TIMEOUT")
 
-    @field_validator("api_key", mode="before")
-    @classmethod
-    def validate_api_key(cls, value: str) -> str:
-        """Validate the OpenAI API key."""
-        if not value.startswith("sk-"):
-            raise ValueError("OpenAI API key must start with sk-")
-        return value
-
 
 class AnthropicSettings(LLMProviderSettings):
     """Settings for Anthropic."""
 
-    api_key: str = Field(..., validation_alias="ANTHROPIC_API_KEY")
+    api_key: SecretStr = Field(alias="ANTHROPIC_API_KEY")
     default_model: str = Field(default="claude-sonnet-4-20250514", alias="ANTHROPIC_MODEL")
     temperature: float = Field(default=0.0, alias="ANTHROPIC_TEMPERATURE")
     max_tokens: int = Field(default=2048, alias="ANTHROPIC_MAX_TOKENS")
     max_retries: int = Field(default=3, alias="ANTHROPIC_MAX_RETRIES")
     timeout: int = Field(default=30, alias="ANTHROPIC_TIMEOUT")
-
-    @field_validator("api_key", mode="before")
-    @classmethod
-    def validate_api_key(cls, value: str) -> str:
-        """Validate the Anthropic API key."""
-        if not value.startswith("sk-"):
-            raise ValueError("Anthropic API key must start with sk-")
-        return value
 
 
 class LLMConfig(BaseSettings):

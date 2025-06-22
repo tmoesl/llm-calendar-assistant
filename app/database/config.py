@@ -7,7 +7,7 @@ pool configuration, and environment-specific behavior.
 
 from functools import lru_cache
 
-from pydantic import Field
+from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -16,7 +16,7 @@ class DbConfig(BaseSettings):
 
     # Database connection settings
     host: str = Field(alias="DATABASE_HOST")
-    password: str = Field(alias="DATABASE_PASSWORD")
+    password: SecretStr = Field(alias="DATABASE_PASSWORD")
     user: str = Field(alias="DATABASE_USER")
     name: str = Field(default="postgres", alias="DATABASE_NAME")
     port: int = Field(default=6543, alias="DATABASE_PORT")
@@ -24,7 +24,7 @@ class DbConfig(BaseSettings):
     @property
     def url(self) -> str:
         """PostgreSQL connection string."""
-        return f"postgresql://{self.user}:{self.password}@{self.host}:{self.port}/{self.name}"
+        return f"postgresql://{self.user}:{self.password.get_secret_value()}@{self.host}:{self.port}/{self.name}"
 
     @property
     def engine_options(self) -> dict:
