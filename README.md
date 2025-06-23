@@ -1,10 +1,8 @@
 # 🤖 LLM Calendar Assistant
 
-<p style="text-align: left;">
-    <img src="https://img.shields.io/badge/-Completed-34A853?style=flat&label=Project&labelColor=23555555" alt="Status">
-    <img src="https://img.shields.io/github/languages/count/tmoesl/llm-calendar-assistant?label=Languages" alt="GitHub language count">
-    <img src="https://img.shields.io/github/languages/top/tmoesl/llm-calendar-assistant?color=white" alt="GitHub top language">
-</p>
+![Status](https://img.shields.io/badge/-Completed-34A853?style=flat&label=Project&labelColor=23555555)
+![Languages](https://img.shields.io/github/languages/count/tmoesl/llm-calendar-assistant?label=Languages)
+![Top Language](https://img.shields.io/github/languages/top/tmoesl/llm-calendar-assistant?color=white)
 
 
 The LLM Calendar Assistant isn't just another calendar tool – it's your shortcut to a production-ready AI-powered calendar infrastructure. Built for speed and control, its modular architecture brings together the best AI models and design patterns to help you deploy faster without compromising flexibility.
