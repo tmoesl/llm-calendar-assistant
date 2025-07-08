@@ -33,7 +33,9 @@ Transform calendar operations from complex UI interactions to simple conversatio
 
 ## ⚡️ System Architecture
 
-![Architecture Diagram](https://placehold.co/800x400)
+<p align="left">
+  <img src="https://drive.google.com/uc?export=view&id=1Jk9NpgRrvgMtofYz1xzFeAzT9GWKGyn3" width="800" height="550">
+</p>
 
 ### Request Flow
 1. **API Ingestion**: FastAPI receives and validates requests
